@@ -4,7 +4,7 @@
  * @Author       : 
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-05-19 12:20:45
+ * @LastEditTime : 2023-05-19 12:54:23
  */
 const { ethers } = require("ethers");
 const provider = ethers.getDefaultProvider("https://polygon-rpc.com")
@@ -57,13 +57,14 @@ class poolSerice {
     this.processing = true
     while (this.queue.length) {
       const transactionHash = this.queue.shift()
-      const result = await provider.getTransaction(transactionHash)
+      const result = await this.provider.getTransaction(transactionHash)
+      console.log('to', result?.to)
       // result.to从数据库里查询如果有这个的话就更新pool信息
-      if () {
-        // 更新pool信息
-        const poolData = await this.getPoolData(result.to)
-        // 更新数据库
-      }
+      // if () {
+      //   // 更新pool信息
+      //   const poolData = await this.getPoolData(result.to)
+      //   // 更新数据库
+      // }
     }
     this.processing = false
   }
@@ -154,5 +155,5 @@ class poolSerice {
   }
 }
 
-const polygonLS = new poolSerice('https://polygon-rpc.com', 42879359, '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA', '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA')
+const polygonLS = new poolSerice('https://mainnet.era.zksync.io', 3830919, '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA', '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA')
 polygonLS.start()
