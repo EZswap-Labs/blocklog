@@ -4,7 +4,7 @@
  * @Author       : 
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-05-19 12:03:39
+ * @LastEditTime : 2023-05-19 12:20:45
  */
 const { ethers } = require("ethers");
 const provider = ethers.getDefaultProvider("https://polygon-rpc.com")
@@ -12,57 +12,6 @@ const contractABI = require('./abi/pair.json');
 const contractAddress = '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA';
 const contract = new ethers.Contract(contractAddress, contractABI, provider);
 const iface = new ethers.utils.Interface(contractABI);
-// 主逻辑
-// async
-// async function main () {
-//   let blockNumber = await provider.getBlockNumber();
-//   const filter = {
-//     address: contractAddress,
-//     fromBlock: 41099955 - 1000,
-//     toBlock: 41099955,
-//     topics: [iface.getEventTopic('NewPair')]
-//   };
-//   provider.getLogs(filter).then((logs) => {
-//     logs.forEach((log) => {
-//       const parsedLog = iface.parseLog(log);
-//       console.log(parsedLog.args.poolAddress);
-//     });
-//   }).catch((err) => {
-//     console.log(err);
-//   });
-// }
-// main()
-
-class TransactionQueue {
-  constructor() {
-    this.queue = []
-    this.processing = false
-    this.uniqueSet = new Set() // Set用来存储已经添加的交易hash，方便进行去重操作
-  }
-
-  async add (transactionHash) {
-    if (!this.uniqueSet.has(transactionHash)) { // 如果这个交易hash还没有被添加到队列中
-      this.queue.push(transactionHash)
-      this.uniqueSet.add(transactionHash) // 将其添加到Set中，以备后续去重操作
-      if (!this.processing) {
-        await this.processQueue()
-      }
-    }
-  }
-
-  async processQueue () {
-    this.processing = true
-    while (this.queue.length) {
-      const transactionHash = this.queue.shift()
-
-      // 这里进行具体的处理操作，如获取交易详情等
-      // 如果处理完了就删掉这条交易hash
-      console.log(`Processing transaction ${transactionHash}`)
-    }
-    this.processing = false
-  }
-}
-
 class poolSerice {
   constructor(rpc, startBlock, pairFactoryAddress, PoolDataContractAddress) {
     this.provider = ethers.getDefaultProvider(rpc)
