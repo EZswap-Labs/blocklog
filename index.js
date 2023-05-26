@@ -4,17 +4,23 @@
  * @Author       : 
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-05-19 12:54:23
+ * @LastEditTime : 2023-05-26 10:38:39
  */
 const { ethers } = require("ethers");
-const provider = ethers.getDefaultProvider("https://polygon-rpc.com")
 const contractABI = require('./abi/pair.json');
 const contractAddress = '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA';
-const contract = new ethers.Contract(contractAddress, contractABI, provider);
 const iface = new ethers.utils.Interface(contractABI);
 class poolSerice {
   constructor(rpc, startBlock, pairFactoryAddress, PoolDataContractAddress) {
-    this.provider = ethers.getDefaultProvider(rpc)
+    try {
+      this.provider = new ethers.providers.WebSocketProvider(rpc);
+    } catch (error) {
+      console.log('wsError', error);
+      setTimeout(() => {
+        this.provider = new ethers.providers.WebSocketProvider(rpc);
+      }, 2000)
+    }
+
     this.startBlock = startBlock
     this.endBlock = startBlock + 1000
     this.pairFactoryAddress = pairFactoryAddress
@@ -123,31 +129,39 @@ class poolSerice {
       toBlock: endBlock,
       topics: [iface.getEventTopic('NewPair')]
     };
-    provider.on("block", async (blockNumber) => {
-      const filter = {
-        fromBlock: blockNumber,
-        toBlock: blockNumber,
-        address: contractAddress,
-        topics: [iface.getEventTopic('NewPair')]
-      };
-      const filterTx = {
-        fromBlock: blockNumber,
-        toBlock: blockNumber
-      };
-      const logs = await provider.getLogs(filter);
-      const txs = await provider.getLogs(filterTx);
-      if (logs.length > 0) {
-        // 有新的pair
-        logs.forEach((log) => {
-          // pair入库
-          const parsedLog = iface.parseLog(log);
-          this.pairadd(parsedLog.args.poolAddress)
-        });
-      }
-      txs.forEach(async (tx) => {
-        this.add(tx.transactionHash)
+    try {
+      provider.on("block", async (blockNumber) => {
+        const filter = {
+          fromBlock: blockNumber,
+          toBlock: blockNumber,
+          address: contractAddress,
+          topics: [iface.getEventTopic('NewPair')]
+        };
+        const filterTx = {
+          fromBlock: blockNumber,
+          toBlock: blockNumber
+        };
+        const logs = await provider.getLogs(filter);
+        const txs = await provider.getLogs(filterTx);
+        if (logs.length > 0) {
+          // 有新的pair
+          logs.forEach((log) => {
+            // pair入库
+            const parsedLog = iface.parseLog(log);
+            this.pairadd(parsedLog.args.poolAddress)
+          });
+        }
+        console.log('blockNumber', blockNumber)
+        console.log('txs', txs.length)
       });
-    });
+      provider.on("error", async (blockNumber) => {
+        console.log('error', blockNumber)
+      });
+    } catch (error) {
+      console.log('同步error', error)
+      this.start()
+    }
+
   }
   // 开始
   async start () {
@@ -155,5 +169,5 @@ class poolSerice {
   }
 }
 
-const polygonLS = new poolSerice('https://mainnet.era.zksync.io', 3830919, '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA', '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA')
-polygonLS.start()
+const zksPool = new poolSerice('wss://mainnet.era.zksync.io/ws', 6139735, '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA', '0x4332465E5C9Ac98e91EEeeCe7989bDD0387f0cBA')
+zksPool.start()
