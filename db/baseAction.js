@@ -4,7 +4,7 @@
  * @Author       : 
  * @Date         : 2023-05-30 14:55:22
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-01 19:51:22
+ * @LastEditTime : 2023-06-01 21:17:26
  */
 // 创建表
 import { getMySqlClient } from './mysql.js'
@@ -155,7 +155,7 @@ export const batchUpdatePairInfo = async (Model, list) => {
   const client = await getMySqlClient()
   const transaction = await client.transaction();
   try {
-    await Model.bulkCreate(list, { updateOnDuplicate: ["delta", "fee", "spot_price", "eth_balance", "token_balance", "eth_volume", "update_timestamp", "nft_count", "swap_type", "nft_ids", "nft_id1155", "nft_count1155"], transaction });
+    await Model.bulkCreate(list, { updateOnDuplicate: ["delta", "fee", "spot_price", "eth_balance", "token_balance", "eth_volume", "update_timestamp", "nft_count", "swap_type", "nft_ids", "nft_id1155", "nft_count1155", "collection_name"], transaction });
     await transaction.commit();
     return true
   } catch (error) {

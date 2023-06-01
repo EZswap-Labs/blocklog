@@ -4,7 +4,7 @@
  * @Author       : 
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-01 20:35:08
+ * @LastEditTime : 2023-06-01 21:15:07
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -84,6 +84,7 @@ class PoolSerice {
           nft_ids: item.nftIds.join(","),
           from_platform: 1,
           is1155: item.is1155,
+          collection_name: item.name721,
           nft_id1155: item.nftId1155.toString(),
           nft_count1155: item.nftCount1155.toString(),
           token_type: item.is1155 ? 'ERC1155' : 'ERC721',
@@ -179,6 +180,8 @@ class PoolSerice {
   // 处理pair信息更新
   async updatePairInfo () {
     const { Model } = this
+    let addlist = []
+    let pairprocessing = false
     let rule = new nodeSchedule.RecurrenceRule();
     rule.second = [0, 10, 20, 30, 40, 50]; // 
     const chunkSize = 10;
@@ -191,13 +194,17 @@ class PoolSerice {
       console.log('更新成功', _result)
     }
 
+
     async function processArray (array) {
-      for (let i = 0; i < array.length; i += chunkSize) {
-        const chunk = array.slice(i, i + chunkSize);
-        processData(chunk);
-        if (i < array.length - chunkSize) {
+      addlist = addlist.concat(array)
+      if (!pairprocessing) {
+        pairprocessing = true
+        while (addlist.length) {
+          const chunk = addlist.splice(0, addlist.length > 9 ? 10 : addlist.length);
+          processData(chunk);
           await new Promise(resolve => setTimeout(resolve, delay)); // Wait for 'delay' milliseconds before continuing
         }
+        pairprocessing = false
       }
     }
     if (this.job) {

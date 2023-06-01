@@ -85,9 +85,24 @@ const abi = [
             "internalType": "bool",
             "name": "is1155",
             "type": "bool"
+          },
+          {
+            "internalType": "string",
+            "name": "uri1155",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol721",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "name721",
+            "type": "string"
           }
         ],
-        "internalType": "struct EZSWAPV2Information.Info",
+        "internalType": "struct EZSWAPV2Information2.Info",
         "name": "info",
         "type": "tuple"
       }
@@ -181,9 +196,24 @@ const abi = [
             "internalType": "bool",
             "name": "is1155",
             "type": "bool"
+          },
+          {
+            "internalType": "string",
+            "name": "uri1155",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol721",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "name721",
+            "type": "string"
           }
         ],
-        "internalType": "struct EZSWAPV2Information.Info[]",
+        "internalType": "struct EZSWAPV2Information2.Info[]",
         "name": "",
         "type": "tuple[]"
       }
