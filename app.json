@@ -1,0 +1,15 @@
+{
+  apps: [
+    {
+    name: "blocklog",
+    script: "./app.js",
+    env_local: {
+      NODE_ENV: "local"
+      },
+    env_prod: {
+      NODE_ENV: "prod"
+      },
+    max_restarts: 100000
+    }
+  ]
+}

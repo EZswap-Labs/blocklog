@@ -4,11 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pm2prod": "pm2 start app.json --env=prod",
+    "pm2local": "pm2 start app.json --env=local",
+    "start": "nodemon app.js --mode local",
+    "test": "nodemon app.js --mode test",
+    "prod": "node app.js --mode prod",
+    "model": "sequelize-auto -h 54.188.95.144 -d ezswap -u root -x HmszbXvhZs1RhyrcXoXs -p 3306  --dialect mysql -o './db/models' -t ezswap_pool"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ethers": "^5.0.0"
-  }
+    "dotenv": "^16.0.3",
+    "ethers": "^5.0.0",
+    "mysql2": "^3.3.3",
+    "node-schedule": "^2.1.1",
+    "nodemon": "^2.0.22",
+    "sequelize": "^6.31.1",
+    "sequelize-auto": "^0.8.8"
+  },
+  "type": "module"
 }
