@@ -1,5 +1,4 @@
-const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+const EzswapPool = function (sequelize, DataTypes) {
   return sequelize.define('ezswap_pool', {
     id: {
       type: DataTypes.STRING(100),
@@ -65,6 +64,7 @@ module.exports = function(sequelize, DataTypes) {
     eth_volume: {
       type: DataTypes.STRING(100),
       allowNull: true,
+      default: "0",
       comment: "0"
     },
     create_timestamp: {
@@ -151,3 +151,4 @@ module.exports = function(sequelize, DataTypes) {
     ]
   });
 };
+export default EzswapPool;

@@ -4,15 +4,18 @@
  * @Author       : 
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-01 12:21:47
+ * @LastEditTime : 2023-06-01 20:35:08
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
+import InfomationABI from '../abi/Information.js';
 import nodeSchedule from 'node-schedule'
-import { batchUpdate, insertPair, updateStartBlock, findDiffPair, updatePair } from '../db/baseAction.js';
+import { batchUpdate, insertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo } from '../db/baseAction.js';
 const iface = new ethers.utils.Interface(ContractABI);
+
+
 class PoolSerice {
-  constructor(rpc, Model, BlockModel, startBlock, pairFactoryAddress, PoolDataContractAddress) {
+  constructor(rpc, Model, BlockModel, EzswapPoolModel, startBlock, pairFactoryAddress, PoolDataContractAddress, mode) {
     try {
       this.provider = new ethers.providers.WebSocketProvider(rpc);
     } catch (error) {
@@ -25,9 +28,11 @@ class PoolSerice {
     this.endBlock = startBlock + 1000
     this.Model = Model
     this.BlockModel = BlockModel
+    this.EzswapPoolModel = EzswapPoolModel
     this.pairFactoryAddress = pairFactoryAddress
     this.pairFactoryContract = new ethers.Contract(pairFactoryAddress, ContractABI, this.provider);
-    this.gePoolDataContract = new ethers.Contract(PoolDataContractAddress, ContractABI, this.provider);
+    this.getPoolDataContract = new ethers.Contract(PoolDataContractAddress, InfomationABI, this.provider);
+    this.mode = mode
     this.pairqueue = []
     this.pairprocessing = false
     this.pairuniqueSet = new Set()
@@ -53,11 +58,39 @@ class PoolSerice {
     this.pairprocessing = false
   }
   // 更新pool信息
-  async getPoolData (poolAddress) {
+  async getPoolData (poolAddresslist) {
+    console.log('poolAddresslist', poolAddresslist)
     try {
       let result = null;
-      result = await this.gePoolDataContract.methods.getPoolData(poolAddress).call();
-      return result;
+      result = await this.getPoolDataContract.getMultiInfo(poolAddresslist.map(item => item.pair_address))
+      return result.map((item, index) => {
+        var timestamp = new Date().getTime();
+        console.log('this.mode', this.mode)
+        return {
+          id: poolAddresslist[index].pair_address,
+          collection: item.collection,
+          owner: item.owner,
+          token: item.token === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? null : item.token,
+          type: item.poolType,
+          asset_recipient: item.assetRecipient,
+          bonding_curve: item.bondingCurve,
+          delta: item.delta.toString(),
+          fee: item.fee.toString(),
+          spot_price: item.spotPrice.toString(),
+          eth_balance: item.token === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? item.tokenBalance.toString() : null,
+          token_balance: item.token !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? item.tokenBalance.toString() : null,
+          nft_count: item.nftCount.toString(),
+          mode: this.mode,
+          nft_ids: item.nftIds.join(","),
+          from_platform: 1,
+          is1155: item.is1155,
+          nft_id1155: item.nftId1155.toString(),
+          nft_count1155: item.nftCount1155.toString(),
+          token_type: item.is1155 ? 'ERC1155' : 'ERC721',
+          create_timestamp: Math.floor(timestamp / 1000),
+          update_timestamp: Math.floor(timestamp / 1000)
+        }
+      })
     } catch (error) {
       console.log(error);
     }
@@ -150,8 +183,10 @@ class PoolSerice {
     rule.second = [0, 10, 20, 30, 40, 50]; // 
     const chunkSize = 10;
     const delay = 1000;
-    async function processData (data) {
-      //Do something with the data...
+    const processData = async (data) => {
+      const list = await this.getPoolData(data)
+      console.log('listlist', list)
+      await batchUpdatePairInfo(this.EzswapPoolModel, list)
       const _result = await updatePair(Model, data)
       console.log('更新成功', _result)
     }
