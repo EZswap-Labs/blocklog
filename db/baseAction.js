@@ -1,7 +1,7 @@
 /*
- * @Descripttion : 
+ * @Descripttion :
  * @version      : 1.0.0
- * @Author       : 
+ * @Author       :
  * @Date         : 2023-05-30 14:55:22
  * @LastEditors  : Please set LastEditors
  * @LastEditTime : 2023-06-01 21:17:26
@@ -83,6 +83,12 @@ export const updateStartBlock = async (Model, startBlock) => {
 // 批量更新pair
 export const batchUpdate = async (Model, list) => {
   const client = await getMySqlClient()
+  /**
+   * todo 这个事务没有用,因为只有一个写操作. 事务是最少两个写操作的时候,保证这这些写操作,要么成功要么失败,和读操作无关.就算读1亿次,只有一次写操作,都不用开事务
+   *      这里要考虑的是是否有分布式事务.或者事务的粒度不够
+   *      事务粒度: 比如在事务之外有个写操作,必须要跟下面事务中的写操作保持原子性,那么事务开启的地方就错了,要写在你想保证原子性的地方
+   *      分布式事务: 线程/进程 之间要保证写操作原子性,client.transaction();只是针对当前线程,就不顶用了,需要引入redis来做事务
+   */
   const transaction = await client.transaction();
   try {
     // 获取到数据库的pair列表
@@ -117,6 +123,9 @@ export const batchUpdate = async (Model, list) => {
 // 寻找pair里async_index跟数据库里active_index不一致的pair
 export const findDiffPair = async (Model) => {
   try {
+    /**
+     *todo 这里推荐在mysql中开启status索引,索引就像字典前面的拼音页码查询功能,开启索引后,mysql会将status字段分类记录,这样你查询的时候,mysql就会直接查status=active的分类,而不是全表查询
+     */
     const list = await Model.findAll({
       where: {
         status: 'active'

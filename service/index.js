@@ -1,7 +1,7 @@
 /*
- * @Descripttion : 
+ * @Descripttion :
  * @version      : 1.0.0
- * @Author       : 
+ * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
  * @LastEditTime : 2023-06-01 21:15:07
@@ -39,6 +39,7 @@ class PoolSerice {
     this.job = null
   }
   async pairadd (address) {
+    // todo 这里有异步操作吗?这队列看起来永远一进一出么
     this.pairqueue.push(address)
     if (!this.pairprocessing) {
       await this.pairprocessQueue()
@@ -50,6 +51,7 @@ class PoolSerice {
       const address = this.pairqueue.shift()
       // pair 入库
       try {
+        // todo 看完了代码,这个有点疑问,这个插入的status值默认是synced.synced不是处理完毕么,那追区块时候的pool不会在定时任务时插入数据库吧
         await insertPair(this.Model, address)
       } catch (error) {
         console.log('error', error)
@@ -108,6 +110,11 @@ class PoolSerice {
     provider.getLogs(filter).then(async (logs) => {
       console.log('logs', logs)
       logs.forEach((log) => {
+        /** todo  这里可以改成循环查出所有的address,然后用bulkCreate一次性插入,性能会高非常多,强烈建议修改.也不需要后续使用队列了
+                  例如:这里需要循环1w次,现在的写法每次都需要链接数据库,写入,断开.连接池写法是获取连接,写入,讲连接归还链接池,如此循环1w次,也可能造成连接池堵塞 时间复杂度 O(n) 空间复杂度O(1)
+                  但是使用bulkCreate的话,只会一次获取连接,写入,归还连接的操作 时间复杂度 O(1) 空间复杂度O(n) 为了防止触发sql字节上限,可以规定一次插入1K数据(理论上会,实际上很难达到)
+                  空间复杂度可以不用考虑,就算是1w条数据,实际上数据也很少 sql的要求:时间复杂度 >> 空间复杂度.不管多复杂的业务,sql都需要在几毫秒内完成
+         **/
         const parsedLog = iface.parseLog(log);
         this.pairadd(parsedLog.args.poolAddress)
       });
@@ -117,6 +124,7 @@ class PoolSerice {
       } else if (this.startBlock + 1000 > blockNumber) {
         this.endBlock = 'latest'
         setTimeout(() => {
+          // todo 这个是递归调用吧,堆栈深度受得了吗? 用while更好吧
           this.updatePairList()
         }, 1000)
       } else {
@@ -126,6 +134,7 @@ class PoolSerice {
           this.updatePairList()
         }, 1000)
       }
+      // todo 这边有问题吧,在同步区块的时候,会递归进入updatePairList,走不到这里,必须要完全同步好之后才会走到这里吧
       await updateStartBlock(BlockModel, startBlock)
     }).catch((err) => {
       setTimeout(() => {
@@ -183,15 +192,18 @@ class PoolSerice {
     let addlist = []
     let pairprocessing = false
     let rule = new nodeSchedule.RecurrenceRule();
-    rule.second = [0, 10, 20, 30, 40, 50]; // 
+    rule.second = [0, 10, 20, 30, 40, 50]; //
     const chunkSize = 10;
     const delay = 1000;
     const processData = async (data) => {
       const list = await this.getPoolData(data)
       console.log('listlist', list)
+      // todo 这里就属于索引开错地方了,要在这里开启索引,updatePair后才关闭索引.
       await batchUpdatePairInfo(this.EzswapPoolModel, list)
+      // todo 可以试试在这里写个 let a=1/0 看看上面的代码会不会成功插入
       const _result = await updatePair(Model, data)
       console.log('更新成功', _result)
+      // todo 为什么不把处理完的addlist弹出?
     }
 
 
