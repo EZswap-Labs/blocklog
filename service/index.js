@@ -4,15 +4,14 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-01 21:15:07
+ * @LastEditTime : 2023-06-07 16:06:04
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
 import InfomationABI from '../abi/Information.js';
 import nodeSchedule from 'node-schedule'
-import { batchUpdate, insertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo } from '../db/baseAction.js';
+import { batchUpdate, batchInsertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo } from '../db/baseAction.js';
 const iface = new ethers.utils.Interface(ContractABI);
-
 
 class PoolSerice {
   constructor(rpc, Model, BlockModel, EzswapPoolModel, startBlock, pairFactoryAddress, PoolDataContractAddress, mode) {
@@ -38,27 +37,30 @@ class PoolSerice {
     this.pairuniqueSet = new Set()
     this.job = null
   }
+
   async pairadd (address) {
     // todo 这里有异步操作吗?这队列看起来永远一进一出么
     this.pairqueue.push(address)
     if (!this.pairprocessing) {
-      await this.pairprocessQueue()
+      this.pairprocessQueue()
     }
   }
+
   async pairprocessQueue () {
     this.pairprocessing = true
     while (this.pairqueue.length) {
-      const address = this.pairqueue.shift()
-      // pair 入库
       try {
+        const chunkAddress = this.pairqueue.splice(0, this.pairqueue.length > 100 ? 100 : this.pairqueue.length);
         // todo 看完了代码,这个有点疑问,这个插入的status值默认是synced.synced不是处理完毕么,那追区块时候的pool不会在定时任务时插入数据库吧
-        await insertPair(this.Model, address)
+        await batchInsertPair(this.Model, chunkAddress, this.mode)
+        await new Promise(resolve => setTimeout(resolve, 500))
       } catch (error) {
         console.log('error', error)
       }
     }
     this.pairprocessing = false
   }
+
   // 更新pool信息
   async getPoolData (poolAddresslist) {
     console.log('poolAddresslist', poolAddresslist)
@@ -67,7 +69,6 @@ class PoolSerice {
       result = await this.getPoolDataContract.getMultiInfo(poolAddresslist.map(item => item.pair_address))
       return result.map((item, index) => {
         var timestamp = new Date().getTime();
-        console.log('this.mode', this.mode)
         return {
           id: poolAddresslist[index].pair_address,
           collection: item.collection,
@@ -135,7 +136,7 @@ class PoolSerice {
         }, 1000)
       }
       // todo 这边有问题吧,在同步区块的时候,会递归进入updatePairList,走不到这里,必须要完全同步好之后才会走到这里吧
-      await updateStartBlock(BlockModel, startBlock)
+      await updateStartBlock(BlockModel, startBlock, this.mode)
     }).catch((err) => {
       setTimeout(() => {
         this.updatePairList()
@@ -175,8 +176,8 @@ class PoolSerice {
         }
         console.log('blockNumber', blockNumber)
         // 更新pool索引
-        await batchUpdate(this.Model, txs.map((tx) => tx.address))
-        await updateStartBlock(BlockModel, blockNumber)
+        await batchUpdate(this.Model, txs.map((tx) => tx.address), this.mode)
+        await updateStartBlock(BlockModel, blockNumber, this.mode)
       });
       provider.on("error", async (blockNumber) => {
         console.log('error', blockNumber)
@@ -199,14 +200,12 @@ class PoolSerice {
       const list = await this.getPoolData(data)
       console.log('listlist', list)
       // todo 这里就属于索引开错地方了,要在这里开启索引,updatePair后才关闭索引.
-      await batchUpdatePairInfo(this.EzswapPoolModel, list)
+      await batchUpdatePairInfo(this.EzswapPoolModel, list, this.mode)
       // todo 可以试试在这里写个 let a=1/0 看看上面的代码会不会成功插入
-      const _result = await updatePair(Model, data)
+      const _result = await updatePair(Model, data, this.mode)
       console.log('更新成功', _result)
       // todo 为什么不把处理完的addlist弹出?
     }
-
-
     async function processArray (array) {
       addlist = addlist.concat(array)
       if (!pairprocessing) {
@@ -224,7 +223,7 @@ class PoolSerice {
     }
     let job = nodeSchedule.scheduleJob(rule, async () => {
       try {
-        const list = await findDiffPair(Model)
+        const list = await findDiffPair(Model, this.mode)
         console.log('list', list)
         processArray(list)
       } catch (error) {

@@ -4,10 +4,10 @@
  * @Author       : 
  * @Date         : 2023-05-30 14:37:52
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-01 10:57:10
+ * @LastEditTime : 2023-06-07 13:45:15
  */
-const Pairlist = function (sequelize, DataTypes, chainName) {
-  return sequelize.define(`${chainName}_pair`, {
+const Pairlist = function (sequelize, DataTypes) {
+  return sequelize.define(`pairlist`, {
     id: {
       autoIncrement: true,
       type: DataTypes.BIGINT,
@@ -23,10 +23,14 @@ const Pairlist = function (sequelize, DataTypes, chainName) {
       type: DataTypes.STRING(255),
       allowNull: false,
       defaultValue: 'active',
+    },
+    mode: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
     }
   }, {
     sequelize,
-    tableName: `${chainName}_pairlist`,
+    tableName: `pairlist`,
     timestamps: true,
     indexes: [
       {
@@ -36,6 +40,13 @@ const Pairlist = function (sequelize, DataTypes, chainName) {
         fields: [
           { name: "id" }
         ]
+      },
+      {
+        fields: [{
+          name: "status"
+        }, {
+          name: 'mode'
+        }]
       }
     ]
   });

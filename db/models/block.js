@@ -4,25 +4,25 @@
  * @Author       : 
  * @Date         : 2023-05-31 20:41:49
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-05-31 20:53:53
+ * @LastEditTime : 2023-06-07 15:36:21
  */
-const blockConfig = function (sequelize, DataTypes, chainName) {
-  return sequelize.define(`${chainName}_blockConfig`, {
-    id: {
-      autoIncrement: true,
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      primaryKey: true
-    },
+const blockConfig = function (sequelize, DataTypes) {
+  return sequelize.define(`blockConfig`, {
     startBlock: {
       type: DataTypes.BIGINT,
       allowNull: false,
       unique: true,
       defaultValue: 0,
+    },
+    mode: {
+      primaryKey: true,
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      primaryKey: true,
     }
   }, {
     sequelize,
-    tableName: `${chainName}_blockConfig`,
+    tableName: `blockConfig`,
     timestamps: true,
     indexes: [
       {
@@ -30,7 +30,7 @@ const blockConfig = function (sequelize, DataTypes, chainName) {
         unique: true,
         using: "BTREE",
         fields: [
-          { name: "id" }
+          { name: "mode" }
         ]
       }
     ]
