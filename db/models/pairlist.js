@@ -4,10 +4,10 @@
  * @Author       : 
  * @Date         : 2023-05-30 14:37:52
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-07 13:45:15
+ * @LastEditTime : 2023-06-08 10:17:00
  */
 const Pairlist = function (sequelize, DataTypes) {
-  return sequelize.define(`pairlist`, {
+  return sequelize.define(`pair_list`, {
     id: {
       autoIncrement: true,
       type: DataTypes.BIGINT,
@@ -30,7 +30,7 @@ const Pairlist = function (sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: `pairlist`,
+    tableName: `pair_list`,
     timestamps: true,
     indexes: [
       {
