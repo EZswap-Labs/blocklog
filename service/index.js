@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-07 16:06:04
+ * @LastEditTime : 2023-06-09 16:59:30
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -167,14 +167,20 @@ class PoolSerice {
         }
         console.log('blockNumber', blockNumber)
         // 更新pool索引
-        await batchUpdate(this.Model, txs.map((tx) => tx.address), this.mode)
-        await updateStartBlock(BlockModel, blockNumber, this.mode)
+        try {
+          await batchUpdate(this.Model, txs.map((tx) => tx.address), this.mode)
+          await updateStartBlock(BlockModel, blockNumber, this.mode)
+        } catch (error) {
+          console.log('同步error', error)
+          this.start()
+        }
       });
       provider.on("error", async (blockNumber) => {
         console.log('error', blockNumber)
+        this.start()
       });
     } catch (error) {
-      console.log('同步error', error)
+      console.log('连接error', error)
       this.start()
     }
   }
