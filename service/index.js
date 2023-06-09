@@ -4,13 +4,13 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-09 16:59:30
+ * @LastEditTime : 2023-06-09 21:35:42
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
 import InfomationABI from '../abi/Information.js';
 import nodeSchedule from 'node-schedule'
-import { batchUpdate, batchInsertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo } from '../db/baseAction.js';
+import { batchUpdate, batchInsertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo, getStartBlock } from '../db/baseAction.js';
 const iface = new ethers.utils.Interface(ContractABI);
 
 class PoolSerice {
@@ -36,6 +36,7 @@ class PoolSerice {
     this.pairprocessing = false
     this.pairuniqueSet = new Set()
     this.job = null
+    this.status = 'sync'
   }
 
   async pairadd (address) {
@@ -100,6 +101,7 @@ class PoolSerice {
   // 更新pair地址列表
   async updatePairList () {
     const { provider, startBlock, endBlock, pairFactoryAddress, BlockModel } = this
+    this.status = 'sync'
     const filter = {
       address: pairFactoryAddress,
       fromBlock: startBlock,
@@ -136,6 +138,7 @@ class PoolSerice {
   }
   // 开始同步区块
   async startSyncBlock () {
+    this.status = 'asyncLog'
     const { provider, startBlock, endBlock, pairFactoryAddress, BlockModel } = this
     const filter = {
       address: pairFactoryAddress,
@@ -186,7 +189,7 @@ class PoolSerice {
   }
   // 处理pair信息更新
   async updatePairInfo () {
-    const { Model } = this
+    const { Model, BlockModel, mode, provider } = this
     let addlist = []
     let pairprocessing = false
     let rule = new nodeSchedule.RecurrenceRule();
@@ -217,6 +220,15 @@ class PoolSerice {
     }
     let job = nodeSchedule.scheduleJob(rule, async () => {
       try {
+        const zks_startBlock = await getStartBlock(BlockModel, mode)
+        const blockNumber = await provider.getBlockNumber();
+        if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
+          if (this.job) {
+            this.job.cancel()
+            this.start()
+          }
+          return false
+        }
         const list = await findDiffPair(Model, this.mode)
         console.log('list', list)
         processArray(list)
