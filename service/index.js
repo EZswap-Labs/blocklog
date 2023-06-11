@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-09 21:35:42
+ * @LastEditTime : 2023-06-11 13:22:53
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -15,20 +15,14 @@ const iface = new ethers.utils.Interface(ContractABI);
 
 class PoolSerice {
   constructor(rpc, Model, BlockModel, EzswapPoolModel, startBlock, pairFactoryAddress, PoolDataContractAddress, mode) {
-    try {
-      this.provider = new ethers.providers.WebSocketProvider(rpc);
-    } catch (error) {
-      console.log('wsError', error);
-      setTimeout(() => {
-        this.provider = new ethers.providers.WebSocketProvider(rpc);
-      }, 2000)
-    }
+    this.rpc = rpc
     this.startBlock = startBlock
     this.endBlock = startBlock + 1000
     this.Model = Model
     this.BlockModel = BlockModel
     this.EzswapPoolModel = EzswapPoolModel
     this.pairFactoryAddress = pairFactoryAddress
+    this.provider = new ethers.providers.WebSocketProvider(this.rpc);
     this.pairFactoryContract = new ethers.Contract(pairFactoryAddress, ContractABI, this.provider);
     this.getPoolDataContract = new ethers.Contract(PoolDataContractAddress, InfomationABI, this.provider);
     this.mode = mode
@@ -54,7 +48,7 @@ class PoolSerice {
         await batchInsertPair(this.Model, chunkAddress, this.mode)
         await new Promise(resolve => setTimeout(resolve, 500))
       } catch (error) {
-        console.log('error', error)
+        console.log('batchInsertPairerror', error)
       }
     }
     this.pairprocessing = false
@@ -93,15 +87,16 @@ class PoolSerice {
           create_timestamp: Math.floor(timestamp / 1000),
           update_timestamp: Math.floor(timestamp / 1000)
         }
-      })
+      }) || []
     } catch (error) {
-      console.log(error);
+      console.log('getPoolData', error);
     }
   }
   // 更新pair地址列表
   async updatePairList () {
     const { provider, startBlock, endBlock, pairFactoryAddress, BlockModel } = this
     this.status = 'sync'
+    console.log('updatePairList', 'startBlock', startBlock, 'endBlock', endBlock)
     const filter = {
       address: pairFactoryAddress,
       fromBlock: startBlock,
@@ -109,7 +104,7 @@ class PoolSerice {
       topics: [iface.getEventTopic('NewPair')]
     };
     provider.getLogs(filter).then(async (logs) => {
-      console.log('logs', logs)
+      console.log('获取logs长度', logs.length)
       logs.forEach((log) => {
         const parsedLog = iface.parseLog(log);
         this.pairadd(parsedLog.args.poolAddress)
@@ -140,6 +135,8 @@ class PoolSerice {
   async startSyncBlock () {
     this.status = 'asyncLog'
     const { provider, startBlock, endBlock, pairFactoryAddress, BlockModel } = this
+    console.log('removeAllListeners', '先移除所有监听器，防止重复监听')
+    provider.removeAllListeners();
     const filter = {
       address: pairFactoryAddress,
       fromBlock: startBlock,
@@ -147,7 +144,7 @@ class PoolSerice {
       topics: [iface.getEventTopic('NewPair')]
     };
     try {
-      provider.on("block", async (blockNumber) => {
+      let _sub = provider.on("block", async (blockNumber) => {
         const filter = {
           fromBlock: blockNumber,
           toBlock: blockNumber,
@@ -174,16 +171,12 @@ class PoolSerice {
           await batchUpdate(this.Model, txs.map((tx) => tx.address), this.mode)
           await updateStartBlock(BlockModel, blockNumber, this.mode)
         } catch (error) {
-          console.log('同步error', error)
+          console.log('因为batchUpdate或updateStartBlock出现错误而重新开始程序')
           this.start()
         }
       });
-      provider.on("error", async (blockNumber) => {
-        console.log('error', blockNumber)
-        this.start()
-      });
     } catch (error) {
-      console.log('连接error', error)
+      console.log('因为同步区块出现错误而重新开始程序')
       this.start()
     }
   }
@@ -218,13 +211,15 @@ class PoolSerice {
     if (this.job) {
       this.job.cancel()
     }
-    let job = nodeSchedule.scheduleJob(rule, async () => {
+    this.job = nodeSchedule.scheduleJob(rule, async () => {
       try {
         const zks_startBlock = await getStartBlock(BlockModel, mode)
         const blockNumber = await provider.getBlockNumber();
         if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
           if (this.job) {
+            console.log('取消定时任务')
             this.job.cancel()
+            console.log('因为出现大于10个区块的差值而重新开始程序')
             this.start()
           }
           return false
@@ -233,24 +228,21 @@ class PoolSerice {
         console.log('list', list)
         processArray(list)
       } catch (error) {
-        console.log('error', error)
+        console.log('定时任务出现问题', error)
+        console.log('因为定时任务出现问题而重新开始程序')
+        this.start()
       }
     });
   }
   // 开始
   async start () {
-    this.provider._websocket.on("error", async (error) => {
+    if (this.provider && this.provider._websocket.readyState === 1) {
+      this.provider._websocket.close()
       this.provider._websocket.terminate();
-      setTimeout(() => {
-        this.start()
-      }, 3000);
-    });
-    this.provider._websocket.on("close", async () => {
-      this.provider._websocket.terminate();
-      setTimeout(() => {
-        this.start()
-      }, 3000);
-    });
+    }
+    console.log('开始程序')
+    this.provider = new ethers.providers.WebSocketProvider(this.rpc);
+    console.log('连接rpc成功')
     this.updatePairList()
     this.updatePairInfo()
   }

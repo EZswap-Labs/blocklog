@@ -4,7 +4,7 @@
  * @Author       : 
  * @Date         : 2023-05-26 22:12:48
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-05-31 20:04:52
+ * @LastEditTime : 2023-06-11 12:48:14
  */
 export default {
   apps: [{
@@ -16,6 +16,8 @@ export default {
     env_development: {
       NODE_ENV: "local"
     },
-    max_restarts: 100000
+    max_restarts: 1000000,
+    cron_restart: '2 * * * *',
+    time: true,
   }]
 }

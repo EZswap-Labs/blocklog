@@ -7,7 +7,7 @@
     "pm2prod": "pm2 start app.json --env=prod",
     "pm2local": "pm2 start app.json --env=local",
     "start": "nodemon app.js --mode local",
-    "test": "nodemon app.js --mode test",
+    "test": "nodemon test.js --mode local",
     "prod": "node app.js --mode prod",
     "model": "sequelize-auto -h 54.188.95.144 -d ezswap -u root -x HmszbXvhZs1RhyrcXoXs -p 3306  --dialect mysql -o './db/models' -t ezswap_pool"
   },
