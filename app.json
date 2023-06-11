@@ -10,7 +10,7 @@
         NODE_ENV: "prod"
       },
       max_restarts: 100000000,
-      cron_restart: "*/2 * * * *",
+      cron_restart: "* */4 * * *",
       time: true
     }
   ]
