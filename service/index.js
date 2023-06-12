@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-12 11:42:06
+ * @LastEditTime : 2023-06-12 16:30:37
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -128,6 +128,7 @@ class PoolSerice {
       }
       await updateStartBlock(BlockModel, startBlock, this.mode)
     }).catch((err) => {
+      console.log('updatePairListerr', err)
       setTimeout(() => {
         this.updatePairList()
       }, 1000)
@@ -172,6 +173,7 @@ class PoolSerice {
         try {
           await batchUpdate(this.Model, txs.map((tx) => tx.address), this.mode)
           await updateStartBlock(BlockModel, blockNumber, this.mode)
+          this.status = 'asyncLog'
         } catch (error) {
           console.log('因为batchUpdate或updateStartBlock出现错误而重新开始程序')
           this.start()
@@ -211,9 +213,11 @@ class PoolSerice {
       }
     }
     if (this.job) {
-      this.job.cancel()
+      // this.job.cancel()
+      clearInterval(this.job)
+      this.job = null
     }
-    this.job = nodeSchedule.scheduleJob(rule, async () => {
+    this.job = setInterval(async () => {
       try {
         const zks_startBlock = await getStartBlock(BlockModel, mode)
         const blockNumber = await provider.getBlockNumber();
@@ -234,7 +238,29 @@ class PoolSerice {
         console.log('因为定时任务出现问题而重新开始程序')
         this.start()
       }
-    });
+    }, 1000 * 10);
+    // this.job = nodeSchedule.scheduleJob(rule, async () => {
+    //   try {
+    //     const zks_startBlock = await getStartBlock(BlockModel, mode)
+    //     const blockNumber = await provider.getBlockNumber();
+    //     if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
+    //       if (this.job) {
+    //         console.log('取消定时任务')
+    //         this.job.cancel()
+    //         console.log('因为出现大于10个区块的差值而重新开始程序')
+    //         this.start()
+    //       }
+    //       return false
+    //     }
+    //     const list = await findDiffPair(Model, this.mode)
+    //     console.log('list', list)
+    //     processArray(list)
+    //   } catch (error) {
+    //     console.log('定时任务出现问题', error)
+    //     console.log('因为定时任务出现问题而重新开始程序')
+    //     this.start()
+    //   }
+    // });
   }
   // 开始
   async start () {
