@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-12 16:30:37
+ * @LastEditTime : 2023-06-12 22:09:37
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -224,7 +224,9 @@ class PoolSerice {
         if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
           if (this.job) {
             console.log('取消定时任务')
-            this.job.cancel()
+            // this.job.cancel()
+            clearInterval(this.job)
+            this.job = null
             console.log('因为出现大于10个区块的差值而重新开始程序')
             this.start()
           }
