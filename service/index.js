@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-11 13:22:53
+ * @LastEditTime : 2023-06-12 11:42:06
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -24,6 +24,7 @@ class PoolSerice {
     this.pairFactoryAddress = pairFactoryAddress
     this.provider = new ethers.providers.WebSocketProvider(this.rpc);
     this.pairFactoryContract = new ethers.Contract(pairFactoryAddress, ContractABI, this.provider);
+    this.PoolDataContractAddress = PoolDataContractAddress
     this.getPoolDataContract = new ethers.Contract(PoolDataContractAddress, InfomationABI, this.provider);
     this.mode = mode
     this.pairqueue = []
@@ -60,6 +61,7 @@ class PoolSerice {
     try {
       let result = null;
       result = await this.getPoolDataContract.getMultiInfo(poolAddresslist.map(item => item.pair_address))
+      console.log('result', result)
       return result.map((item, index) => {
         var timestamp = new Date().getTime();
         return {
@@ -243,6 +245,7 @@ class PoolSerice {
     console.log('开始程序')
     this.provider = new ethers.providers.WebSocketProvider(this.rpc);
     console.log('连接rpc成功')
+    this.getPoolDataContract = new ethers.Contract(this.PoolDataContractAddress, InfomationABI, this.provider);
     this.updatePairList()
     this.updatePairInfo()
   }
