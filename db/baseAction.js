@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-30 14:55:22
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-07 16:05:43
+ * @LastEditTime : 2023-06-13 18:44:44
  */
 // 创建表
 import { getMySqlClient } from './mysql.js'
@@ -60,7 +60,8 @@ export const getStartBlock = async (Model, mode) => {
 // 插入区块高度
 export const insertStartBlock = async (Model, startBlock, mode) => {
   try {
-    const block = await Model.create({ startBlock: startBlock, mode: mode }, { updateOnDuplicate: ["updatedAt", "startBlock"], });
+    var timestamp = new Date().getTime();
+    const block = await Model.create({ startBlock: startBlock, mode: mode, update_timestamp: Math.floor(timestamp / 1000) }, { updateOnDuplicate: ["updatedAt", "startBlock", "update_timestamp"], });
     console.log('insertStartBlock', JSON.parse(JSON.stringify(block, null, 2)))
     return JSON.parse(JSON.stringify(block, null, 2))
   } catch (error) {
@@ -72,7 +73,8 @@ export const insertStartBlock = async (Model, startBlock, mode) => {
 // 更新数据库区块高度
 export const updateStartBlock = async (Model, startBlock, mode) => {
   try {
-    const block = await Model.update({ startBlock: startBlock }, {
+    var timestamp = new Date().getTime();
+    const block = await Model.update({ startBlock: startBlock, update_timestamp: Math.floor(timestamp / 1000) }, {
       where: {
         mode: mode
       }

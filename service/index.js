@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 18:38:32
+ * @LastEditTime : 2023-06-13 18:49:41
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -221,14 +221,13 @@ class PoolSerice {
     this.job = setInterval(async () => {
       console.log('定时执行')
       try {
-        console.log('获取数据库区块高度')
+        console.log('获取数据库最近区块更新的时间')
         const zks_startBlock = await getStartBlock(BlockModel, mode)
-        console.log('获取数据库区块高度成功')
         console.log('获取需要更新的list')
         const list = await findDiffPair(Model, this.mode) || []
         processArray(list)
         console.log('获取需要更新的list成功')
-        let dbtime = Date.parse(zks_startBlock.updatedAt) / 1000
+        let dbtime = zks_startBlock.update_timestamp
         let nowtime = Date.parse(new Date()) / 1000
         const blockNumber = await this.provider.getBlockNumber();
         console.log('数据库最后更新时间跟当前时间相差的秒数', nowtime, dbtime, nowtime - dbtime)
