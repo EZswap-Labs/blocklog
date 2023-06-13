@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 18:49:41
+ * @LastEditTime : 2023-06-13 19:05:33
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -229,7 +229,6 @@ class PoolSerice {
         console.log('获取需要更新的list成功')
         let dbtime = zks_startBlock.update_timestamp
         let nowtime = Date.parse(new Date()) / 1000
-        const blockNumber = await this.provider.getBlockNumber();
         console.log('数据库最后更新时间跟当前时间相差的秒数', nowtime, dbtime, nowtime - dbtime)
         if (this.status === 'asyncLog' && nowtime - dbtime > 60) {
           console.log('因为时间差出现大于60秒的差值而重新开始程序')
