@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 09:40:27
+ * @LastEditTime : 2023-06-13 10:45:07
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -194,6 +194,7 @@ class PoolSerice {
     const chunkSize = 10;
     const delay = 1000;
     const processData = async (data) => {
+      console.log('data', data)
       const list = await this.getPoolData(data)
       console.log('listlist', list)
       await batchUpdatePairInfo(this.EzswapPoolModel, list, this.mode)
@@ -249,6 +250,7 @@ class PoolSerice {
           if (this.job) {
             console.log('取消定时任务')
             this.job.cancel()
+            this.job = null
             console.log('因为出现大于10个区块的差值而重新开始程序')
             this.start()
           }
