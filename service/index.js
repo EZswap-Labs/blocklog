@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 17:34:37
+ * @LastEditTime : 2023-06-13 17:41:40
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -223,7 +223,7 @@ class PoolSerice {
       try {
         const zks_startBlock = await getStartBlock(BlockModel, mode)
         const blockNumber = await provider.getBlockNumber();
-        const list = await findDiffPair(Model, this.mode)
+        const list = await findDiffPair(Model, this.mode) || []
         processArray(list)
         console.log('list', list)
         if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
