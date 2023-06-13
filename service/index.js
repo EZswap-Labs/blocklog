@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 17:24:39
+ * @LastEditTime : 2023-06-13 17:34:37
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -223,12 +223,12 @@ class PoolSerice {
       try {
         const zks_startBlock = await getStartBlock(BlockModel, mode)
         const blockNumber = await provider.getBlockNumber();
+        const list = await findDiffPair(Model, this.mode)
         processArray(list)
+        console.log('list', list)
         if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
           this.start()
         }
-        const list = await findDiffPair(Model, this.mode)
-        console.log('list', list)
       } catch (error) {
         console.log('定时任务出现问题', error)
         console.log('因为定时任务出现问题而重新开始程序')

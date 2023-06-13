@@ -4,7 +4,7 @@
  * @Author       : 
  * @Date         : 2023-05-29 19:28:08
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 16:58:06
+ * @LastEditTime : 2023-06-13 17:00:31
  */
 import dotenv from 'dotenv'
 import Sequelize from 'sequelize';
@@ -34,7 +34,7 @@ const zksTestPool = new PoolSerice('wss://testnet.era.zksync.dev/ws', PairlistMo
 zksTestPool.start()
 zksTestPool.updatePairInfo()
 zksTestPool.provider._websocket.on("error", async (error) => {
-  this.provider._websocket.terminate();
+  zksTestPool.provider._websocket.terminate();
   setTimeout(() => {
     zksTestPool.start()
     zksTestPool.updatePairInfo()
