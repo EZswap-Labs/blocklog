@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 10:45:07
+ * @LastEditTime : 2023-06-13 16:03:54
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
@@ -214,42 +214,19 @@ class PoolSerice {
       }
     }
     if (this.job) {
-      this.job.cancel()
-      // clearInterval(this.job)
+      // this.job.cancel()
+      clearInterval(this.job)
       this.job = null
     }
-    // this.job = setInterval(async () => {
-    //   try {
-    //     const zks_startBlock = await getStartBlock(BlockModel, mode)
-    //     const blockNumber = await provider.getBlockNumber();
-    //     if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
-    //       if (this.job) {
-    //         console.log('取消定时任务')
-    //         // this.job.cancel()
-    //         clearInterval(this.job)
-    //         this.job = null
-    //         console.log('因为出现大于10个区块的差值而重新开始程序')
-    //         this.start()
-    //       }
-    //       return false
-    //     }
-    //     const list = await findDiffPair(Model, this.mode)
-    //     console.log('list', list)
-    //     processArray(list)
-    //   } catch (error) {
-    //     console.log('定时任务出现问题', error)
-    //     console.log('因为定时任务出现问题而重新开始程序')
-    //     this.start()
-    //   }
-    // }, 1000 * 10);
-    this.job = nodeSchedule.scheduleJob(rule, async () => {
+    this.job = setInterval(async () => {
       try {
         const zks_startBlock = await getStartBlock(BlockModel, mode)
         const blockNumber = await provider.getBlockNumber();
         if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
           if (this.job) {
             console.log('取消定时任务')
-            this.job.cancel()
+            // this.job.cancel()
+            clearInterval(this.job)
             this.job = null
             console.log('因为出现大于10个区块的差值而重新开始程序')
             this.start()
@@ -264,7 +241,30 @@ class PoolSerice {
         console.log('因为定时任务出现问题而重新开始程序')
         this.start()
       }
-    });
+    }, 1000 * 10);
+    // this.job = nodeSchedule.scheduleJob(rule, async () => {
+    //   try {
+    //     const zks_startBlock = await getStartBlock(BlockModel, mode)
+    //     const blockNumber = await provider.getBlockNumber();
+    //     if (this.status === 'asyncLog' && blockNumber - zks_startBlock.startBlock > 10) {
+    //       if (this.job) {
+    //         console.log('取消定时任务')
+    //         this.job.cancel()
+    //         this.job = null
+    //         console.log('因为出现大于10个区块的差值而重新开始程序')
+    //         this.start()
+    //       }
+    //       return false
+    //     }
+    //     const list = await findDiffPair(Model, this.mode)
+    //     console.log('list', list)
+    //     processArray(list)
+    //   } catch (error) {
+    //     console.log('定时任务出现问题', error)
+    //     console.log('因为定时任务出现问题而重新开始程序')
+    //     this.start()
+    //   }
+    // });
   }
   // 开始
   async start () {
@@ -277,7 +277,7 @@ class PoolSerice {
     console.log('连接rpc成功')
     this.getPoolDataContract = new ethers.Contract(this.PoolDataContractAddress, InfomationABI, this.provider);
     this.updatePairList()
-    this.updatePairInfo()
+    // this.updatePairInfo()
   }
 }
 

@@ -4,7 +4,7 @@
  * @Author       : 
  * @Date         : 2023-05-29 19:28:08
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-11 13:16:34
+ * @LastEditTime : 2023-06-13 16:04:35
  */
 import dotenv from 'dotenv'
 import Sequelize from 'sequelize';
@@ -32,3 +32,4 @@ await createModel(BlockConfigModel)
 const zks_startBlock = await getStartBlock(BlockConfigModel, 'zks_dev') || await insertStartBlock(BlockConfigModel, 6639000, 'zks_dev')
 const zksTestPool = new PoolSerice('wss://testnet.era.zksync.dev/ws', PairlistModel, BlockConfigModel, EzswapPoolModel, zks_startBlock.startBlock, '0xBcB7032c1e1Ea0Abc3850590349560e1333d6848', '0x8fB6a250adA61cDEA897C35f5404d94ada89633f', 'zks_dev')
 zksTestPool.start()
+zksTestPool.updatePairInfo()
