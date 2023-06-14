@@ -4,7 +4,7 @@
  * @Author       :
  * @Date         : 2023-05-30 14:55:22
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 18:44:44
+ * @LastEditTime : 2023-06-14 22:56:20
  */
 // 创建表
 import { getMySqlClient } from './mysql.js'
@@ -156,6 +156,24 @@ export const batchUpdatePairInfo = async (Model, list) => {
     return true
   } catch (error) {
     console.log('error', error);
+    return false
+  }
+}
+
+
+// 批量获取pairinfo
+export const batchGetPairInfo = async (Model, list) => {
+  try {
+    const res = await Model.findAll({
+      where: {
+        id: {
+          [Op.or]: list.map(item => item.pair_address)
+        }
+      }
+    });
+    const _res = JSON.parse(JSON.stringify(res, null, 2))
+    return _res
+  } catch (error) {
     return false
   }
 }

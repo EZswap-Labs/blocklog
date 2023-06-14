@@ -4,13 +4,13 @@
  * @Author       :
  * @Date         : 2023-05-11 09:46:59
  * @LastEditors  : Please set LastEditors
- * @LastEditTime : 2023-06-13 19:05:33
+ * @LastEditTime : 2023-06-14 22:57:08
  */
 import { ethers } from 'ethers'
 import ContractABI from '../abi/pair.js';
 import InfomationABI from '../abi/Information.js';
 import nodeSchedule from 'node-schedule'
-import { batchUpdate, batchInsertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo, getStartBlock } from '../db/baseAction.js';
+import { batchUpdate, batchInsertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo, batchGetPairInfo, getStartBlock } from '../db/baseAction.js';
 const iface = new ethers.utils.Interface(ContractABI);
 
 class PoolSerice {
@@ -61,7 +61,6 @@ class PoolSerice {
     try {
       let result = null;
       result = await this.getPoolDataContract.getMultiInfo(poolAddresslist.map(item => item.pair_address))
-      console.log('result', result)
       return result.map((item, index) => {
         var timestamp = new Date().getTime();
         return {
@@ -87,7 +86,8 @@ class PoolSerice {
           nft_count1155: item.nftCount1155.toString(),
           token_type: item.is1155 ? 'ERC1155' : 'ERC721',
           create_timestamp: Math.floor(timestamp / 1000),
-          update_timestamp: Math.floor(timestamp / 1000)
+          update_timestamp: Math.floor(timestamp / 1000),
+          eth_volume: 0,
         }
       }) || []
     } catch (error) {
@@ -194,9 +194,18 @@ class PoolSerice {
     const chunkSize = 10;
     const delay = 1000;
     const processData = async (data) => {
-      console.log('data', data)
+      const _ethvollist = await batchGetPairInfo(this.EzswapPoolModel, data)
       const list = await this.getPoolData(data)
       console.log('listlist', list)
+      if (_ethvollist) {
+        // _ethvollist和list都有的id
+        _ethvollist.forEach((item) => {
+          const _index = list.findIndex((listitem) => listitem.id.toLowerCase() === item.id.toLowerCase())
+          if (_index > -1) {
+            list[_index].eth_volume = (Math.abs(list[_index].eth_balance - item.eth_balance) + parseInt((item.eth_volume || 0))).toString()
+          }
+        })
+      }
       await batchUpdatePairInfo(this.EzswapPoolModel, list, this.mode)
       const _result = await updatePair(Model, data, this.mode)
       console.log('更新成功', _result)
@@ -229,7 +238,7 @@ class PoolSerice {
         console.log('获取需要更新的list成功')
         let dbtime = zks_startBlock.update_timestamp
         let nowtime = Date.parse(new Date()) / 1000
-        console.log('数据库最后更新时间跟当前时间相差的秒数', nowtime, dbtime, nowtime - dbtime)
+        console.log('数据库最后更新时间跟当前时间相差的秒数', this.status, nowtime, dbtime, nowtime - dbtime)
         if (this.status === 'asyncLog' && nowtime - dbtime > 60) {
           console.log('因为时间差出现大于60秒的差值而重新开始程序')
           this.start()
