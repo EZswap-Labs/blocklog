@@ -67,15 +67,15 @@ class PoolSerice {
           id: poolAddresslist[index].pair_address,
           collection: item.collection,
           owner: item.owner,
-          token: item.token === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? null : item.token,
+          token: (item.token === '0x0000000000000000000000000000000000000000') ? null : item.token,
           type: item.poolType,
           asset_recipient: item.assetRecipient,
           bonding_curve: item.bondingCurve,
           delta: item.delta.toString(),
           fee: item.fee.toString(),
           spot_price: item.spotPrice.toString(),
-          eth_balance: item.token === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? item.tokenBalance.toString() : null,
-          token_balance: item.token !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? item.tokenBalance.toString() : null,
+          eth_balance: (item.token === '0x0000000000000000000000000000000000000000') ? item.tokenBalance.toString() : null,
+          token_balance: (item.token !==  '0x0000000000000000000000000000000000000000') ? item.tokenBalance.toString() : null,
           nft_count: item.nftCount.toString(),
           mode: this.mode,
           nft_ids: item.nftIds.join(","),
@@ -206,7 +206,7 @@ class PoolSerice {
           }
         })
       }
-      await batchUpdatePairInfo(this.EzswapPoolModel, list, this.mode)
+      await batchUpdatePairInfo(this.EzswapPoolModel, list, this.mode)   //// ????
       const _result = await updatePair(Model, data, this.mode)
       console.log('更新成功', _result)
     }

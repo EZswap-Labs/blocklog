@@ -46,7 +46,7 @@ export async function getMySqlClient () {
   }
   try {
     // 连接数据库
-    let sequelize = new Sequelize(process.env.DATABASE, process.env.USERNAME, process.env.PASSWORD, params)
+    let sequelize = new Sequelize(process.env.DATABASE, 'root', process.env.PASSWORD, params)
     try {
       // 测试连接
       await sequelize.authenticate();
