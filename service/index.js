@@ -113,7 +113,7 @@ class PoolSerice {
       });
       const blockNumber = await provider.getBlockNumber();
       if (this.endBlock === 'latest') {
-        this.startSyncBlock()
+        this.startSyncBlock()                                   // pair_list
       } else if (this.startBlock + 1000 > blockNumber) {
         this.endBlock = 'latest'
         setTimeout(() => {
@@ -126,7 +126,7 @@ class PoolSerice {
           this.updatePairList()
         }, 1000)
       }
-      await updateStartBlock(BlockModel, startBlock, this.mode)
+      await updateStartBlock(BlockModel, startBlock, this.mode)   // block_config
     }).catch((err) => {
       console.log('updatePairListerr', err)
       setTimeout(() => {
@@ -134,7 +134,7 @@ class PoolSerice {
       }, 1000)
     });
   }
-  // 开始同步区块
+  // 开始同步区块, 处理pair_list
   async startSyncBlock () {
     this.status = 'asyncLog'
     const { provider, startBlock, endBlock, pairFactoryAddress, BlockModel } = this
@@ -194,7 +194,7 @@ class PoolSerice {
     const chunkSize = 10;
     const delay = 1000;
     const processData = async (data) => {
-      const _ethvollist = await batchGetPairInfo(this.EzswapPoolModel, data)
+      const _ethvollist = await batchGetPairInfo(this.EzswapPoolModel, data, this.mode)   // 从ezswap_pool中得到所有的pair
       const list = await this.getPoolData(data)
       console.log('listlist', list)
       if (_ethvollist) {

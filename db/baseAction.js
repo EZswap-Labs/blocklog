@@ -43,7 +43,7 @@ export const batchInsertPair = async (Model, addresslist, mode) => {
     return false
   }
 }
-// 获取数据库区块高度
+// 从block_coonfig中, 获取数据库区块高度
 export const getStartBlock = async (Model, mode) => {
   try {
     const block = await Model.findOne({
@@ -57,7 +57,7 @@ export const getStartBlock = async (Model, mode) => {
   }
 }
 
-// 插入区块高度
+// 从block_coonfig中, 插入区块高度
 export const insertStartBlock = async (Model, startBlock, mode) => {
   try {
     var timestamp = new Date().getTime();
@@ -70,7 +70,7 @@ export const insertStartBlock = async (Model, startBlock, mode) => {
   }
 }
 
-// 更新数据库区块高度
+// 从block_coonfig中, 更新数据库区块高度
 export const updateStartBlock = async (Model, startBlock, mode) => {
   try {
     var timestamp = new Date().getTime();
@@ -86,7 +86,7 @@ export const updateStartBlock = async (Model, startBlock, mode) => {
   }
 }
 
-// 批量更新pair
+// 从pair_list中, 批量更新pair, 把新加入的pair都标记从active
 export const batchUpdate = async (Model, list, mode) => {
   try {
     // 获取到数据库的pair列表
@@ -106,7 +106,8 @@ export const batchUpdate = async (Model, list, mode) => {
         where: {
           pair_address: {
             [Op.or]: diffRows
-          }
+          },
+          mode: mode
         }
       })
     }
@@ -117,7 +118,7 @@ export const batchUpdate = async (Model, list, mode) => {
   }
 }
 
-// 寻找pair里async_index跟数据库里active_index不一致的pair
+// 从pair_list中, 寻找pair里async_index跟数据库里active_index不一致的pair， 找出所有需要更新的pair
 export const findDiffPair = async (Model, mode) => {
   try {
     const list = await Model.findAll({
@@ -133,7 +134,7 @@ export const findDiffPair = async (Model, mode) => {
   }
 }
 
-// 更新pair
+// 从pair_list中, 更新pair, 表示同步完成
 export const updatePair = async (Model, updateList) => {
   try {
     await Model.update({ status: 'asynced' }, {
@@ -149,10 +150,10 @@ export const updatePair = async (Model, updateList) => {
   }
 }
 
-// 批量更新pairinfo
-export const batchUpdatePairInfo = async (Model, list) => {
+// 从ezswap_pool中, 批量更新pairinfo 
+export const batchUpdatePairInfo = async (Model, list, mode) => {
   try {
-    await Model.bulkCreate(list, { updateOnDuplicate: ["delta", "fee", "spot_price", "eth_balance", "token_balance", "eth_volume", "update_timestamp", "nft_count", "swap_type", "nft_ids", "nft_id1155", "nft_count1155", "collection_name", "mode"] });
+    await Model.bulkCreate(list, { updateOnDuplicate: ["owner", "asset_recipient","delta", "fee", "spot_price", "eth_balance", "token_balance", "eth_volume", "update_timestamp", "nft_count", "swap_type", "nft_ids", "nft_id1155", "nft_count1155", "collection_name"] });
     return true
   } catch (error) {
     console.log('error', error);
@@ -161,14 +162,15 @@ export const batchUpdatePairInfo = async (Model, list) => {
 }
 
 
-// 批量获取pairinfo
-export const batchGetPairInfo = async (Model, list) => {
+// 从ezswap_pool中, 批量获取pairinfo
+export const batchGetPairInfo = async (Model, list, mode) => {
   try {
     const res = await Model.findAll({
       where: {
         id: {
           [Op.or]: list.map(item => item.pair_address)
-        }
+        },
+        mode: mode
       }
     });
     const _res = JSON.parse(JSON.stringify(res, null, 2))

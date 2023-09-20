@@ -8,22 +8,25 @@
  */
 const blockConfig = function (sequelize, DataTypes) {
   return sequelize.define(`block_config`, {
-    startBlock: {
+    startBlock: { 
       type: DataTypes.BIGINT,
       allowNull: false,
-      unique: true,
       defaultValue: 0,
     },
     mode: {
-      primaryKey: true,
       type: DataTypes.STRING(20),
       allowNull: false,
-      primaryKey: true,
     },
     update_timestamp: {
       type: DataTypes.STRING(100),
       allowNull: true,
       comment: "1681455607"
+    },
+    id: {
+      autoIncrement: true,
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      primaryKey: true,
     },
   }, {
     sequelize,
@@ -31,10 +34,11 @@ const blockConfig = function (sequelize, DataTypes) {
     timestamps: true,
     indexes: [
       {
-        name: "PRIMARY",
+        name: "startBlock",
         unique: true,
         using: "BTREE",
         fields: [
+          { name: "startBlock" },
           { name: "mode" }
         ]
       }
