@@ -64,13 +64,13 @@ class PoolSerice {
       return result.map((item, index) => {
         var timestamp = new Date().getTime();
         return {
-          id: poolAddresslist[index].pair_address,
-          collection: item.collection,
-          owner: item.owner,
-          token: (item.token === '0x0000000000000000000000000000000000000000') ? null : item.token,
+          id: poolAddresslist[index].pair_address.toLowerCase(),
+          collection: item.collection.toLowerCase(),
+          owner: item.owner.toLowerCase(),
+          token: (item.token === '0x0000000000000000000000000000000000000000') ? null : item.token.toLowerCase(),
           type: item.poolType,
-          asset_recipient: item.assetRecipient,
-          bonding_curve: item.bondingCurve,
+          asset_recipient: item.assetRecipient.toLowerCase(),
+          bonding_curve: item.bondingCurve.toLowerCase(),
           delta: item.delta.toString(),
           fee: item.fee.toString(),
           spot_price: item.spotPrice.toString(),
