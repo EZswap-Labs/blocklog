@@ -38,7 +38,7 @@ await createModel(BlockConfigModel);
 
 const eosTest_startBlock =
   (await getStartBlock(BlockConfigModel, "eostest")) ||
-  (await insertStartBlock(BlockConfigModel, 20787170, "eostest"));
+  (await insertStartBlock(BlockConfigModel, 20926440, "eostest"));
 const eosTestPool = new PoolSerice(
   "https://api.testnet.evm.eosnetwork.com/",
   PairlistModel,
@@ -51,8 +51,8 @@ const eosTestPool = new PoolSerice(
 );
 eosTestPool.start();
 eosTestPool.updatePairInfo();
-eosTestPool.provider._websocket.on("error", async (error) => {
-  eosTestPool.provider._websocket.terminate();
+eosTestPool.provider.on("error", async (error) => {
+  //   eosTestPool.provider.terminate();
   setTimeout(() => {
     eosTestPool.start();
     eosTestPool.updatePairInfo();

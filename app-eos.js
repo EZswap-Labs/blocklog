@@ -51,8 +51,8 @@ const eosMainPool = new PoolSerice(
 );
 eosMainPool.start();
 eosMainPool.updatePairInfo();
-eosMainPool.provider._websocket.on("error", async (error) => {
-  eosMainPool.provider._websocket.terminate();
+eosMainPool.provider.on("error", async (error) => {
+//   eosMainPool.provider._websocket.terminate();
   setTimeout(() => {
     eosMainPool.start();
     eosMainPool.updatePairInfo();

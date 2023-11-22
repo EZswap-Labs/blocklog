@@ -13,6 +13,16 @@ import nodeSchedule from 'node-schedule'
 import { batchUpdate, batchInsertPair, updateStartBlock, findDiffPair, updatePair, batchUpdatePairInfo, batchGetPairInfo, getStartBlock } from '../db/baseAction.js';
 const iface = new ethers.utils.Interface(ContractABI);
 
+function createProvider(userInput) {
+  let provider;
+  if (userInput.startsWith('wss://')) {
+      provider = new ethers.providers.WebSocketProvider(userInput);
+  } else {
+      provider = new ethers.providers.JsonRpcProvider(userInput);
+  }
+  return provider;
+}
+
 class PoolSerice {
   constructor(rpc, Model, BlockModel, EzswapPoolModel, startBlock, pairFactoryAddress, PoolDataContractAddress, mode) {
     this.rpc = rpc
@@ -22,7 +32,7 @@ class PoolSerice {
     this.BlockModel = BlockModel
     this.EzswapPoolModel = EzswapPoolModel
     this.pairFactoryAddress = pairFactoryAddress
-    this.provider = new ethers.providers.WebSocketProvider(this.rpc);
+    this.provider = createProvider(this.rpc);
     this.pairFactoryContract = new ethers.Contract(pairFactoryAddress, ContractABI, this.provider);
     this.PoolDataContractAddress = PoolDataContractAddress
     this.getPoolDataContract = new ethers.Contract(PoolDataContractAddress, InfomationABI, this.provider);
@@ -275,12 +285,13 @@ class PoolSerice {
   }
   // 开始
   async start () {
-    if (this.provider && this.provider._websocket.readyState === 1) {
-      this.provider._websocket.close()
-      this.provider._websocket.terminate();
-    }
+    // if (this.provider && this.provider._websocket.readyState === 1) {
+    //   this.provider._websocket.close()
+    //   this.provider._websocket.terminate();
+    // }
     console.log('开始程序')
-    this.provider = new ethers.providers.WebSocketProvider(this.rpc);
+    // this.provider = new ethers.providers.WebSocketProvider(this.rpc);
+    this.provider = createProvider(this.rpc)
     console.log('连接rpc成功')
     this.getPoolDataContract = new ethers.Contract(this.PoolDataContractAddress, InfomationABI, this.provider);
     this.updatePairList()
