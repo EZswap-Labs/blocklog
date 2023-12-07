@@ -113,7 +113,7 @@ class PoolSerice {
       address: pairFactoryAddress,
       fromBlock: startBlock,
       toBlock: endBlock,
-      topics: [iface.getEventTopic('NewPair')]
+      topics: [[iface.getEventTopic('NewPair'), iface.getEventTopic('NFTDeposit'), iface.getEventTopic('TokenDeposit')]]
     };
     provider.getLogs(filter).then(async (logs) => {
       console.log('获取logs长度', logs.length)
@@ -154,7 +154,7 @@ class PoolSerice {
       address: pairFactoryAddress,
       fromBlock: startBlock,
       toBlock: endBlock,
-      topics: [iface.getEventTopic('NewPair')]
+      topics: [[iface.getEventTopic('NewPair'), iface.getEventTopic('NFTDeposit'), iface.getEventTopic('TokenDeposit')]]
     };
     try {
       let _sub = provider.on("block", async (blockNumber) => {
@@ -162,7 +162,7 @@ class PoolSerice {
           fromBlock: blockNumber,
           toBlock: blockNumber,
           address: pairFactoryAddress,
-          topics: [iface.getEventTopic('NewPair')]
+          topics: [[iface.getEventTopic('NewPair'), iface.getEventTopic('NFTDeposit'), iface.getEventTopic('TokenDeposit')]]
         };
         const filterTx = {
           fromBlock: blockNumber,

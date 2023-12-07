@@ -34,9 +34,10 @@ export const batchInsertPair = async (Model, addresslist, mode) => {
     await Model.bulkCreate(addresslist.map(res => {
       return {
         pair_address: res,
-        mode: mode
+        mode: mode,
+        status: 'active',
       }
-    }), { updateOnDuplicate: ["updatedAt", "mode"] });
+    }), { updateOnDuplicate: ["updatedAt", "mode", "status"] });
     // await Model.create({ pair_address: address, mode: mode }, { updateOnDuplicate: ["updatedAt", "mode"] });
     return true
   } catch (error) {
