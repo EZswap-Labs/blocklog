@@ -40,7 +40,7 @@ const ethMain_startBlock =
   (await getStartBlock(BlockConfigModel, "ethmain")) ||
   (await insertStartBlock(BlockConfigModel, 18820492, "ethmain"));
 const ethMainPool = new PoolSerice(
-  "wss://ethereum.publicnode.com",
+  "https://1rpc.io/eth",
   PairlistModel,
   BlockConfigModel,
   EzswapPoolModel,
@@ -51,8 +51,8 @@ const ethMainPool = new PoolSerice(
 );
 ethMainPool.start();
 ethMainPool.updatePairInfo();
-ethMainPool.provider._websocket.on("error", async (error) => {
-  ethMainPool.provider._websocket.terminate();
+ethMainPool.provider.on("error", async (error) => {
+  // ethMainPool.provider._websocket.terminate();
   setTimeout(() => {
     ethMainPool.start();
     ethMainPool.updatePairInfo();

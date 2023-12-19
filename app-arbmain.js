@@ -40,7 +40,7 @@ const arbMain_startBlock =
   (await getStartBlock(BlockConfigModel, "arbmain")) ||
   (await insertStartBlock(BlockConfigModel, 161607850, "arbmain"));
 const arbMainPool = new PoolSerice(
-  "wss://arbitrum-one.publicnode.com",
+  "https://1rpc.io/arb",
   PairlistModel,
   BlockConfigModel,
   EzswapPoolModel,
@@ -51,8 +51,8 @@ const arbMainPool = new PoolSerice(
 );
 arbMainPool.start();
 arbMainPool.updatePairInfo();
-arbMainPool.provider._websocket.on("error", async (error) => {
-  arbMainPool.provider._websocket.terminate();
+arbMainPool.provider.on("error", async (error) => {
+  // arbMainPool.provider._websocket.terminate();
   setTimeout(() => {
     arbMainPool.start();
     arbMainPool.updatePairInfo();
