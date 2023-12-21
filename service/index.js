@@ -43,9 +43,10 @@ class PoolSerice {
     PoolDataContractAddress,
     mode
   ) {
+    this.intervalBlock = (mode === "ethmain") ? 10 : 10000;
     this.rpc = rpc;
     this.startBlock = startBlock;
-    this.endBlock = startBlock + 10000;
+    this.endBlock = startBlock + this.intervalBlock;
     this.Model = Model;
     this.BlockModel = BlockModel;
     this.EzswapPoolModel = EzswapPoolModel;
@@ -182,14 +183,14 @@ class PoolSerice {
         if (this.endBlock === "latest") {
           // this.startSyncBlock()        
           this.startSyncBlock2()                           // pair_list
-        } else if (this.startBlock + 10000 > blockNumber) {
+        } else if (this.startBlock + this.intervalBlock > blockNumber) {
           this.endBlock = "latest";
           setTimeout(() => {
             this.updatePairList();
           }, 1000);
         } else {
-          this.startBlock = startBlock + 10000;
-          this.endBlock = this.startBlock + 10000;
+          this.startBlock = startBlock + this.intervalBlock;
+          this.endBlock = this.startBlock + this.intervalBlock;
           setTimeout(() => {
             this.updatePairList();
           }, 1000);
