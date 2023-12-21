@@ -27,7 +27,7 @@ class PoolSerice {
   constructor(rpc, Model, BlockModel, EzswapPoolModel, startBlock, pairFactoryAddress, PoolDataContractAddress, mode) {
     this.rpc = rpc
     this.startBlock = startBlock
-    this.endBlock = startBlock + 1000
+    this.endBlock = startBlock + 10000
     this.Model = Model
     this.BlockModel = BlockModel
     this.EzswapPoolModel = EzswapPoolModel
@@ -124,14 +124,14 @@ class PoolSerice {
       const blockNumber = await provider.getBlockNumber();
       if (this.endBlock === 'latest') {
         this.startSyncBlock()                                   // pair_list
-      } else if (this.startBlock + 1000 > blockNumber) {
+      } else if (this.startBlock + 10000 > blockNumber) {
         this.endBlock = 'latest'
         setTimeout(() => {
           this.updatePairList()
         }, 1000)
       } else {
-        this.startBlock = startBlock + 1000
-        this.endBlock = this.startBlock + 1000
+        this.startBlock = startBlock + 10000
+        this.endBlock = this.startBlock + 10000
         setTimeout(() => {
           this.updatePairList()
         }, 1000)
@@ -258,7 +258,7 @@ class PoolSerice {
         console.log('因为定时任务出现问题而重新开始程序')
         this.start()
       }
-    }, 1000 * 10);
+    }, 1000 * 60);
     // this.job = nodeSchedule.scheduleJob(rule, async () => {
     //   try {
     //     const zks_startBlock = await getStartBlock(BlockModel, mode)

@@ -40,7 +40,7 @@ const arbMain_startBlock =
   (await getStartBlock(BlockConfigModel, "arbmain")) ||
   (await insertStartBlock(BlockConfigModel, 161607850, "arbmain"));
 const arbMainPool = new PoolSerice(
-  "https://1rpc.io/arb",
+  "wss://arb-mainnet.g.alchemy.com/v2/fhwYDP_2WE4k40b4z2PxCNw00JRxlVE2",
   PairlistModel,
   BlockConfigModel,
   EzswapPoolModel,
