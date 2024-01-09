@@ -43,7 +43,7 @@ class PoolSerice {
     PoolDataContractAddress,
     mode
   ) {
-    this.intervalBlock = (mode === "ethmain") ? 10 : 10000;
+    this.intervalBlock = (mode === "ethmain") ? 10 : 1000;
     this.rpc = rpc;
     this.startBlock = startBlock;
     this.endBlock = startBlock + this.intervalBlock;
@@ -212,11 +212,11 @@ class PoolSerice {
         console.log("获取到的最新区块号：", latestBlockNumber);
 
         if (this.startBlock < latestBlockNumber) {
-          this.endBlock = latestBlockNumber;
+          // this.endBlock = latestBlockNumber;
           const filter = {
             address: this.pairFactoryAddress,
             fromBlock: this.startBlock,
-            toBlock: this.endBlock,
+            toBlock: latestBlockNumber,
             topics: [
               [
                 iface.getEventTopic("NewPair"),
@@ -227,13 +227,13 @@ class PoolSerice {
           };
           const filterTx = {
             fromBlock: this.startBlock,
-            toBlock: this.endBlock,
+            toBlock: latestBlockNumber,
           };
 
           // 获取过滤后的日志
           const logs = await this.provider.getLogs(filter);
           const txs = await this.provider.getLogs(filterTx);
-          console.log("获取logs长度", logs.length);
+          // console.log("获取logs长度", logs.length);
           logs.forEach((log) => {
             const parsedLog = iface.parseLog(log);
             this.pairadd(parsedLog.args.poolAddress);
@@ -247,9 +247,10 @@ class PoolSerice {
               txs.map((tx) => tx.address),
               this.mode
             );
-            this.startBlock = this.endBlock + 1;
+            this.startBlock = latestBlockNumber + 1;
             await updateStartBlock(this.BlockModel, this.startBlock, this.mode);
             this.status = "asyncLog";
+            console.log('updateStartBlock~~', this.startBlock)
           } catch (error) {
             console.log(
               "因为batchUpdate或updateStartBlock出现错误而重新开始程序"
@@ -261,7 +262,7 @@ class PoolSerice {
         console.error("updatePairList error:", err);
         this.start();
       }
-    }, 10000);
+    }, 1000 * 30);
   }
   // 开始同步区块, 处理pair_list
   async startSyncBlock() {
@@ -405,7 +406,7 @@ class PoolSerice {
           dbtime,
           nowtime - dbtime
         );
-        if (this.status === "asyncLog" && nowtime - dbtime > 60) {
+        if (this.status === "asyncLog" && nowtime - dbtime > 100) {
           console.log("因为时间差出现大于60秒的差值而重新开始程序");
           this.start();
         }
@@ -414,7 +415,7 @@ class PoolSerice {
         console.log("因为定时任务出现问题而重新开始程序");
         this.start();
       }
-    }, 1000 * 60);
+    }, 1000 * 100);
   }
   // 开始
   async start() {
