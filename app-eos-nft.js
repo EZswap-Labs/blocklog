@@ -56,7 +56,7 @@ async function main() {
     await syncBlock()
     while (true) {
         await syncBlock()
-        await sleep(1000);
+        await sleep(5000000);
     }
     // setTimeout(() => {
     //
@@ -77,8 +77,11 @@ const batchInsertToken = async (Model, addresslist) => {
     }
 }
 
-function sleep (time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
+var sleepSetTimeout_ctrl;
+
+function sleep(ms) {
+    clearInterval(sleepSetTimeout_ctrl);
+    return new Promise(resolve => sleepSetTimeout_ctrl = setTimeout(resolve, ms));
 }
 
 
