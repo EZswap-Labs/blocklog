@@ -1,7 +1,7 @@
 /*
- * @Descripttion : 
+ * @Descripttion :
  * @version      : 1.0.0
- * @Author       : 
+ * @Author       :
  * @Date         : 2023-05-30 14:24:54
  * @LastEditors  : Please set LastEditors
  * @LastEditTime : 2023-06-01 19:38:26
@@ -46,7 +46,7 @@ export async function getMySqlClient () {
   }
   try {
     // 连接数据库
-    let sequelize = new Sequelize(process.env.DATABASE, 'root', process.env.PASSWORD, params)
+    let sequelize = new Sequelize(process.env.DATABASE === undefined ? 'ezswap':process.env.DATABASE, 'root', process.env.PASSWORD === undefined ? "qazwsxedc":process.env.PASSWORD, params)
     try {
       // 测试连接
       await sequelize.authenticate();
