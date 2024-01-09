@@ -12,13 +12,16 @@ const iface = new ethers.utils.Interface(ContractABI);
 let provider = new ethers.providers.JsonRpcProvider("https://api.evm.eosnetwork.com/");
 
 // 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef maybe mint event
-let startBlock = 24053903
+let startBlock = 24110403
 
 async function syncBlock() {
     // 实时获取最新区块
     let endBlock = await provider.getBlockNumber()
     while (startBlock <= endBlock) {
-        const currentEndBlock = startBlock + 500
+        let currentEndBlock = startBlock + 500
+        if (currentEndBlock > endBlock) {
+            currentEndBlock = endBlock
+        }
         console.log(startBlock, currentEndBlock)
         const filter = {
             address: "0xC10A988680355BdFfE0B998Cd12098264C3957Bd",
@@ -51,9 +54,13 @@ async function syncBlock() {
 
 async function main() {
     await syncBlock()
-    setTimeout(() => {
-        syncBlock()
-    }, 1000);
+    while (true) {
+        await syncBlock()
+        await sleep(1000);
+    }
+    // setTimeout(() => {
+    //
+    // }, 1000);
 }
 
 main()
@@ -68,6 +75,10 @@ const batchInsertToken = async (Model, addresslist) => {
         console.log(error)
         return false
     }
+}
+
+function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
 }
 
 
