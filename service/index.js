@@ -263,7 +263,7 @@ class PoolSerice {
         console.error("error updatePairList error:", err);
         this.start();
       }
-    }, 1000 * 30);
+    }, 1000 * 6);
   }
   // 开始同步区块, 处理pair_list
   async startSyncBlock() {
@@ -420,7 +420,7 @@ class PoolSerice {
         this.startSyncBlock2job = null;
         this.start();
       }
-    }, 1000 * 100);
+    }, 1000 * 6);
   }
   // 开始
   async start() {

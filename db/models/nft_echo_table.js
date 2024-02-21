@@ -1,5 +1,5 @@
 const nft_echo_table = function (sequelize, DataTypes) {
-  return sequelize.define("nft_echo", { 
+  return sequelize.define("nft_echo", {
     token_id: {
       type: DataTypes.STRING,
       allowNull: false,
