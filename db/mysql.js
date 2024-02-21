@@ -1,7 +1,7 @@
 /*
- * @Descripttion : 
+ * @Descripttion :
  * @version      : 1.0.0
- * @Author       : 
+ * @Author       :
  * @Date         : 2023-05-30 14:24:54
  * @LastEditors  : Please set LastEditors
  * @LastEditTime : 2023-06-01 19:38:26
@@ -56,12 +56,12 @@ export async function getMySqlClient () {
     } catch (error) {
       // 连接失败，将client置为null
       client = null
-      console.error('Unable to connect to the database:', error);
+      console.error('error Unable to connect to the database:', error);
     }
     // 返回连接实例
     return client;
   } catch (error) {
-    console.log('connect failed', error.message)
+    console.log('error connect failed', error.message)
     return null;
   }
 }

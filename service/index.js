@@ -89,7 +89,7 @@ class PoolSerice {
         await batchInsertPair(this.Model, chunkAddress, this.mode);
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
-        console.log("batchInsertPairerror", error);
+        console.log("error batchInsertPairerror", error);
       }
     }
     this.pairprocessing = false;
@@ -144,7 +144,7 @@ class PoolSerice {
         }) || []
       );
     } catch (error) {
-      console.log("getPoolData", error);
+      console.log("error getPoolData", error);
     }
   }
   // 更新pair地址列表
@@ -181,7 +181,7 @@ class PoolSerice {
         });
         const blockNumber = await provider.getBlockNumber();
         if (this.endBlock === "latest") {
-          // this.startSyncBlock()        
+          // this.startSyncBlock()
           this.startSyncBlock2()                           // pair_list
         } else if (this.startBlock + this.intervalBlock > blockNumber) {
           this.endBlock = "latest";
@@ -198,7 +198,7 @@ class PoolSerice {
         await updateStartBlock(BlockModel, startBlock, this.mode); // block_config
       })
       .catch((err) => {
-        console.log("updatePairListerr", err);
+        console.log("error updatePairListerr", err);
         setTimeout(() => {
           this.updatePairList();
         }, 1000);
@@ -252,14 +252,12 @@ class PoolSerice {
             this.status = "asyncLog";
             console.log('updateStartBlock~~', this.startBlock)
           } catch (error) {
-            console.log(
-              "因为batchUpdate或updateStartBlock出现错误而重新开始程序"
-            );
+            console.error("error 因为batchUpdate或updateStartBlock出现错误而重新开始程序 ", error);
             this.start();
           }
         }
       } catch (err) {
-        console.error("updatePairList error:", err);
+        console.error("error updatePairList error:", err);
         this.start();
       }
     }, 1000 * 30);
@@ -322,14 +320,12 @@ class PoolSerice {
           await updateStartBlock(BlockModel, blockNumber, this.mode);
           this.status = "asyncLog";
         } catch (error) {
-          console.log(
-            "因为batchUpdate或updateStartBlock出现错误而重新开始程序"
-          );
+          console.log("error 因为batchUpdate或updateStartBlock出现错误而重新开始程序", error);
           this.start();
         }
       });
     } catch (error) {
-      console.log("因为同步区块出现错误而重新开始程序");
+      console.error("error 因为同步区块出现错误而重新开始程序 ", error);
       this.start();
     }
   }
@@ -411,8 +407,8 @@ class PoolSerice {
           this.start();
         }
       } catch (error) {
-        console.log("定时任务出现问题", error);
-        console.log("因为定时任务出现问题而重新开始程序");
+        console.error("error 定时任务出现问题", error);
+        console.error("error 因为定时任务出现问题而重新开始程序");
         this.start();
       }
     }, 1000 * 100);

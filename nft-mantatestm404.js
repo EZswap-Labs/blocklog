@@ -67,7 +67,7 @@ async function processLogs(nft, mode, fromBlock, toBlock) {
                 update_at: new Date(),
             });
         } catch (error) {
-            console.error(error);
+            console.error('error ', error);
         }
     }
 
@@ -78,7 +78,7 @@ async function processLogs(nft, mode, fromBlock, toBlock) {
     }
 }
 
-// main 
+// main
 async function main() {
 
     let nft = '0x6B8a2dBdcfE02bee42b8bD5703eC28eb70d9862D'
@@ -114,7 +114,7 @@ async function main() {
                 fromBlock = toBlock + 1;
             }
         } catch (error) {
-            console.error(error);
+            console.error('error ', error);
         }
     }, pollInterval);
 }
