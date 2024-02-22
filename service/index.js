@@ -68,6 +68,7 @@ class PoolSerice {
     this.pairprocessing = false;
     this.pairuniqueSet = new Set();
     this.job = null;
+    this.startSyncBlock2job = null;
     this.status = "sync";
   }
 
@@ -206,10 +207,11 @@ class PoolSerice {
   }
 
   async startSyncBlock2() {
-    setInterval(async () => {
+    clearInterval(this.startSyncBlock2job) // 进行一次清楚操作
+    this.startSyncBlock2job = setInterval(async () => {
       try {
         const latestBlockNumber = await this.provider.getBlockNumber();
-        console.log("获取到的最新区块号：", latestBlockNumber);
+        console.log("获取到的最新区块号&this.startBlock：", latestBlockNumber, this.startBlock);
 
         if (this.startBlock < latestBlockNumber) {
           // this.endBlock = latestBlockNumber;
@@ -403,12 +405,18 @@ class PoolSerice {
           nowtime - dbtime
         );
         if (this.status === "asyncLog" && nowtime - dbtime > 100) {
-          console.log("因为时间差出现大于60秒的差值而重新开始程序");
+          console.log("error 因为时间差出现大于60秒的差值而重新开始程序");
+          console.log('关闭定时任务startSyncBlock2job');
+          clearInterval(this.startSyncBlock2job);
+          this.startSyncBlock2job = null;
           this.start();
         }
       } catch (error) {
         console.error("error 定时任务出现问题", error);
         console.error("error 因为定时任务出现问题而重新开始程序");
+        console.log('关闭定时任务startSyncBlock2job');
+        clearInterval(this.startSyncBlock2job);
+        this.startSyncBlock2job = null;
         this.start();
       }
     }, 1000 * 100);
