@@ -210,8 +210,9 @@ class PoolSerice {
     clearInterval(this.startSyncBlock2job) // 进行一次清楚操作
     this.startSyncBlock2job = setInterval(async () => {
       try {
+        console.log("this.startBlock：", this.startBlock);
         const latestBlockNumber = await this.provider.getBlockNumber();
-        console.log("获取到的最新区块号&this.startBlock：", latestBlockNumber, this.startBlock);
+        console.log("获取到的最新区块号：", latestBlockNumber);
 
         if (this.startBlock < latestBlockNumber) {
           // this.endBlock = latestBlockNumber;
