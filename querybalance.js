@@ -22,21 +22,36 @@ let provider = new ethers.providers.JsonRpcProvider(
 );
 
 async function queryBalance(queryAddress, queryBlock) {
-    const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=account&action=eth_get_balance&address=' + queryAddress + '&block=' + queryBlock)
+    try {
+        const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=account&action=eth_get_balance&address=' + queryAddress + '&block=' + queryBlock)
+        return response
+    } catch (error) {
+        console.log("balance request error", error);
+    }
+    return null
     // console.log('status:', response.status)
-    return response
 }
 
 async function queryTxListInternal(queryAddress, queryBlock) {
-    const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=account&&action=txlistinternal&address=' + queryAddress + '&start_block=' + queryBlock + '&end_block=' + (queryBlock + 1))
-    // console.log('status:', response.status)
-    return response
+    try {
+        const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=account&&action=txlistinternal&address=' + queryAddress + '&start_block=' + queryBlock + '&end_block=' + (queryBlock + 1))
+        // console.log('status:', response.status)
+        return response
+    } catch (error) {
+        console.log("queryTxListInternal request error", error);
+    }
+    return null
 }
 
 async function queryTxInfo(txHash) {
-    const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=transaction&action=gettxinfo&txhash=' + txHash)
-    // console.log('status:', response.status)
-    return response
+    try {
+        const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=transaction&action=gettxinfo&txhash=' + txHash)
+        // console.log('status:', response.status)
+        return response
+    } catch (error) {
+        console.log("queryTxInfo request error", error);
+    }
+    return null
 }
 function sleep(time){
     return new Promise((resolve) => setTimeout(resolve, time));
@@ -49,7 +64,7 @@ async function processBalance(startBlock) {
     let address = "0x353F4106641Db62384cF0e4F1Ef15F8Ac9A9fb4B";
     // 查询指定区块的余额
     let response = await queryBalance(address, startBlock)
-    while (response.status !== 200) {
+    while (null === response || response.status !== 200) {
         console.error("查询失败:", response.status)
         await sleep(1000);
         response = await queryBalance(address, startBlock)
@@ -58,7 +73,7 @@ async function processBalance(startBlock) {
     // console.log('beforeBalance', Number(beforeBalance))
     startBlock = startBlock + 1
     let responseAfterBalance = await queryBalance(address, startBlock)
-    while (responseAfterBalance.status !== 200) {
+    while (null === responseAfterBalance || responseAfterBalance.status !== 200) {
         console.error("查询失败:", responseAfterBalance.status)
         await sleep(1000);
         responseAfterBalance = await queryBalance(address, startBlock)
@@ -69,13 +84,13 @@ async function processBalance(startBlock) {
     if (chazhi > 0) {
         // 查询指定区块内的内部交易
         let txListInternalResponse = await queryTxListInternal(address, startBlock)
-        while (txListInternalResponse.status !== 200) {
+        while (null === txListInternalResponse || txListInternalResponse.status !== 200) {
             console.error("查询失败:", txListInternalResponse.status)
             await sleep(1000);
             txListInternalResponse = await queryTxListInternal(address, startBlock)
         }
         let queryTxInfoResponse = await queryTxInfo(txListInternalResponse.data.result[0].transactionHash)
-        while (queryTxInfoResponse.status !== 200) {
+        while (null === queryTxInfoResponse || queryTxInfoResponse.status !== 200) {
             console.error("查询失败:", queryTxInfoResponse.status)
             await sleep(1000);
             queryTxInfoResponse = await queryTxInfo(txListInternalResponse.data.result[0].transactionHash)
