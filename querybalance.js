@@ -117,8 +117,8 @@ async function main() {
 
     // let nft = '0x6B8a2dBdcfE02bee42b8bD5703eC28eb70d9862D'
     // let mode = 'mantatest'
-    let startBlock = 22221460
-    collectionVolMap.set('0xd2ffd7e6644ec7266ffb50582784ea3d4686026d', 9900990099009)
+    let startBlock = 24452552
+    collectionVolMap.set('0xd2ffd7e6644ec7266ffb50582784ea3d4686026d', 49504950495047)
     // let END_BLOCK = 2920869
 
     // let fromBlock = await getStartBlock(nft, mode, 1920869);
