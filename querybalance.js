@@ -21,61 +21,76 @@ let provider = new ethers.providers.JsonRpcProvider(
     'https://pacific-rpc.manta.network/http'
 );
 
-async function queryBalance (queryAddress,queryBlock){
-    const response =await axios.get('https://explorer.evm.eosnetwork.com/api?module=account&action=eth_get_balance&address='+queryAddress+'&block='+queryBlock)
-    return Number(response.data.result)
+async function queryBalance(queryAddress, queryBlock) {
+    const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=account&action=eth_get_balance&address=' + queryAddress + '&block=' + queryBlock)
+    // console.log('status:', response.status)
+    return response
 }
 
-let collectionVolMap= new Map();
+async function queryTxListInternal(queryAddress, queryBlock) {
+    const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=account&&action=txlistinternal&address=' + queryAddress + '&start_block=' + queryBlock + '&end_block=' + (queryBlock + 1))
+    // console.log('status:', response.status)
+    return response
+}
 
-async function processBalance (startBlock){
+async function queryTxInfo(txHash) {
+    const response = await axios.get('https://explorer.evm.eosnetwork.com/api?module=transaction&action=gettxinfo&txhash=' + txHash)
+    // console.log('status:', response.status)
+    return response
+}
+function sleep(time){
+    return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+let collectionVolMap = new Map();
+
+async function processBalance(startBlock) {
 
     let address = "0x353F4106641Db62384cF0e4F1Ef15F8Ac9A9fb4B";
     // 查询指定区块的余额
-    const beforeBalance = await queryBalance(address, startBlock)
+    let response = await queryBalance(address, startBlock)
+    while (response.status !== 200) {
+        console.error("查询失败:", response.status)
+        await sleep(1000);
+        response = await queryBalance(address, startBlock)
+    }
+    const beforeBalance = Number(response.data.result)
     // console.log('beforeBalance', Number(beforeBalance))
     startBlock = startBlock + 1
-    const afterBalance = await queryBalance(address, startBlock)
+    let responseAfterBalance = await queryBalance(address, startBlock)
+    while (responseAfterBalance.status !== 200) {
+        console.error("查询失败:", responseAfterBalance.status)
+        await sleep(1000);
+        responseAfterBalance = await queryBalance(address, startBlock)
+    }
+    const afterBalance = Number(responseAfterBalance.data.result)
     const chazhi = afterBalance - beforeBalance
-    console.log('startBlock: ', startBlock,' beforeBalance: ',beforeBalance,' afterBalance: ',afterBalance, ' chazhi:', chazhi)
+    console.log('startBlock: ', startBlock, ' beforeBalance: ', beforeBalance, ' afterBalance: ', afterBalance, ' chazhi:', chazhi)
     if (chazhi > 0) {
         // 查询指定区块内的内部交易
-        axios.get('https://explorer.evm.eosnetwork.com/api?module=account&&action=txlistinternal&address=0x353F4106641Db62384cF0e4F1Ef15F8Ac9A9fb4B&start_block=27857730&end_block=27857732')
-            .then(function (response) {
-                // handle success
-                console.log('transactionHash:',response.data.result[0].transactionHash);
-                // 查询交易,确定是交易的哪个collection
-                axios.get('https://explorer.evm.eosnetwork.com/api?module=transaction&action=gettxinfo&txhash=' + response.data.result[0].transactionHash)
-                    .then(function (response) {
-                        // handle success
-                        // console.log(response.data.result.logs);
-                        for (const log of response.data.result.logs) {
-                            if (log.topics.includes("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") || log.topics.includes("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")) {
-                                console.log('查到topic:',log.address)
-                                if (collectionVolMap.has(log.address)) {
-                                    collectionVolMap.set(log.address, collectionVolMap.get(log.address) + chazhi)
-                                } else {
-                                    collectionVolMap.set(log.address, chazhi)
-                                }
-                                // console.log('collectionVolMap22', JSON.stringify(collectionVolMap))
-                            }
-                        }
-                    })
-                    .catch(function (error) {
-                        // handle error
-                        console.log(error);
-                    })
-                    .finally(function () {
-                        // always executed
-                    });
-            })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            })
-            .finally(function () {
-                // always executed
-            });
+        let txListInternalResponse = await queryTxListInternal(address, startBlock)
+        while (txListInternalResponse.status !== 200) {
+            console.error("查询失败:", txListInternalResponse.status)
+            await sleep(1000);
+            txListInternalResponse = await queryTxListInternal(address, startBlock)
+        }
+        let queryTxInfoResponse = await queryTxInfo(txListInternalResponse.data.result[0].transactionHash)
+        while (queryTxInfoResponse.status !== 200) {
+            console.error("查询失败:", queryTxInfoResponse.status)
+            await sleep(1000);
+            queryTxInfoResponse = await queryTxInfo(txListInternalResponse.data.result[0].transactionHash)
+        }
+        for (const log of queryTxInfoResponse.data.result.logs) {
+            if (log.topics.includes("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") || log.topics.includes("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")) {
+                console.log('查到topic:', log.address)
+                if (collectionVolMap.has(log.address)) {
+                    collectionVolMap.set(log.address, collectionVolMap.get(log.address) + chazhi)
+                } else {
+                    collectionVolMap.set(log.address, chazhi)
+                }
+                // console.log('collectionVolMap22', JSON.stringify(collectionVolMap))
+            }
+        }
     }
     // startBlock = startBlock +1
     processBalance(startBlock)
@@ -87,14 +102,14 @@ async function main() {
 
     // let nft = '0x6B8a2dBdcfE02bee42b8bD5703eC28eb70d9862D'
     // let mode = 'mantatest'
-    let startBlock = 22220789
+    let startBlock = 22220880
+    // collectionVolMap.set('0x31753b319f03a7ca0264a1469da0149982ed7564', 9900990099009)
     // let END_BLOCK = 2920869
 
     // let fromBlock = await getStartBlock(nft, mode, 1920869);
     // const pollInterval = 5000; // 5s
     // const maxBlockRange = 1000;
     await processBalance(startBlock)
-
 
 
     //解析input
