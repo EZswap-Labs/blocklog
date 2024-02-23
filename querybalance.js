@@ -65,7 +65,7 @@ async function processBalance(startBlock) {
     // 查询指定区块的余额
     let response = await queryBalance(address, startBlock)
     while (null === response || response.status !== 200) {
-        console.error("查询失败:", response.status)
+        console.error("查询失败:", response)
         await sleep(1000);
         response = await queryBalance(address, startBlock)
     }
@@ -74,7 +74,7 @@ async function processBalance(startBlock) {
     startBlock = startBlock + 1
     let responseAfterBalance = await queryBalance(address, startBlock)
     while (null === responseAfterBalance || responseAfterBalance.status !== 200) {
-        console.error("查询失败:", responseAfterBalance.status)
+        console.error("查询失败:", responseAfterBalance)
         await sleep(1000);
         responseAfterBalance = await queryBalance(address, startBlock)
     }
@@ -85,13 +85,13 @@ async function processBalance(startBlock) {
         // 查询指定区块内的内部交易
         let txListInternalResponse = await queryTxListInternal(address, startBlock)
         while (null === txListInternalResponse || txListInternalResponse.status !== 200) {
-            console.error("查询失败:", txListInternalResponse.status)
+            console.error("查询失败:", txListInternalResponse)
             await sleep(1000);
             txListInternalResponse = await queryTxListInternal(address, startBlock)
         }
         let queryTxInfoResponse = await queryTxInfo(txListInternalResponse.data.result[0].transactionHash)
         while (null === queryTxInfoResponse || queryTxInfoResponse.status !== 200) {
-            console.error("查询失败:", queryTxInfoResponse.status)
+            console.error("查询失败:", queryTxInfoResponse)
             await sleep(1000);
             queryTxInfoResponse = await queryTxInfo(txListInternalResponse.data.result[0].transactionHash)
         }
@@ -117,8 +117,8 @@ async function main() {
 
     // let nft = '0x6B8a2dBdcfE02bee42b8bD5703eC28eb70d9862D'
     // let mode = 'mantatest'
-    let startBlock = 22220880
-    // collectionVolMap.set('0x31753b319f03a7ca0264a1469da0149982ed7564', 9900990099009)
+    let startBlock = 22221460
+    collectionVolMap.set('0xd2ffd7e6644ec7266ffb50582784ea3d4686026d', 9900990099009)
     // let END_BLOCK = 2920869
 
     // let fromBlock = await getStartBlock(nft, mode, 1920869);
