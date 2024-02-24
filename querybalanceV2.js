@@ -78,7 +78,7 @@ async function processBalance(startBlock, address) {
                     }
                     const afterBalance = Number(responseAfterBalance.data.result)
                     const chazhi = afterBalance - beforeBalance
-                    console.log('txhash ',+ tx.transactionHash,+' topic: ', log.address, ' currentBlock: ', tx.blockNumber, ' beforeBalance: ', beforeBalance, ' afterBalance: ', afterBalance, ' chazhi:', chazhi)
+                    console.log('txhash ',+ tx.transactionHash,' topic: ', log.address, ' currentBlock: ', tx.blockNumber, ' beforeBalance: ', beforeBalance, ' afterBalance: ', afterBalance, ' chazhi:', chazhi)
 
                     if (collectionVolMap.has(log.address)) {
                         collectionVolMap.set(log.address, collectionVolMap.get(log.address) + chazhi)
