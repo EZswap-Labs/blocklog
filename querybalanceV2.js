@@ -38,6 +38,7 @@ function sleep(time) {
 }
 
 let collectionVolMap = new Map();
+let beforeBalance = 0
 
 async function processBalance(startBlock, address) {
 
@@ -62,13 +63,13 @@ async function processBalance(startBlock, address) {
                 if (log.topics.includes("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") || log.topics.includes("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")) {
                     // 查下当前和之前的余额,算这个block有多少交易量
                     // 查询指定区块的余额
-                    let response = await queryBalance(address, tx.blockNumber - 1)
-                    while (null === response || response.status !== 200) {
-                        console.error("查询失败:", response)
-                        await sleep(1000);
-                        response = await queryBalance(address, tx.blockNumber - 1)
-                    }
-                    const beforeBalance = Number(response.data.result)
+                    // let response = await queryBalance(address, tx.blockNumber - 1)
+                    // while (null === response || response.status !== 200) {
+                    //     console.error("查询失败:", response)
+                    //     await sleep(1000);
+                    //     response = await queryBalance(address, tx.blockNumber - 1)
+                    // }
+                    // const beforeBalance = Number(response.data.result)
                     // console.log('beforeBalance', Number(beforeBalance))
                     let responseAfterBalance = await queryBalance(address, tx.blockNumber)
                     while (null === responseAfterBalance || responseAfterBalance.status !== 200) {
@@ -78,15 +79,19 @@ async function processBalance(startBlock, address) {
                     }
                     const afterBalance = Number(responseAfterBalance.data.result)
                     const chazhi = afterBalance - beforeBalance
-                    console.log('txhash ', tx.transactionHash.toString(),' topic: ', log.address, ' currentBlock: ', tx.blockNumber, ' beforeBalance: ', beforeBalance, ' afterBalance: ', afterBalance, ' chazhi:', chazhi)
+                    if (chazhi > 0) {
+                        // 创建池子也会被查出来,别的不知道还有什么,只有差值大于0,才是真的交易
+                        console.log('txhash ', tx.transactionHash.toString(), ' topic: ', log.address, ' currentBlock: ', tx.blockNumber, ' beforeBalance: ', beforeBalance, ' afterBalance: ', afterBalance, ' chazhi:', chazhi)
 
-                    if (collectionVolMap.has(log.address)) {
-                        collectionVolMap.set(log.address, collectionVolMap.get(log.address) + chazhi)
-                    } else {
-                        collectionVolMap.set(log.address, chazhi)
+                        if (collectionVolMap.has(log.address)) {
+                            collectionVolMap.set(log.address, collectionVolMap.get(log.address) + chazhi)
+                        } else {
+                            collectionVolMap.set(log.address, chazhi)
+                        }
+                        console.log('collectionVolMap', JSON.stringify([...collectionVolMap]))
+                        startBlock = tx.blockNumber
                     }
-                    console.log('collectionVolMap', JSON.stringify([...collectionVolMap]))
-                    startBlock = tx.blockNumber
+                    beforeBalance = afterBalance
                     break
                 }
             }
