@@ -78,7 +78,7 @@ async function processBalance(startBlock, address) {
                     }
                     const afterBalance = Number(responseAfterBalance.data.result)
                     const chazhi = afterBalance - beforeBalance
-                    console.log('topic: ', log.address, ' currentBlock: ', tx.blockNumber, ' beforeBalance: ', tx.blockNumber - 1, ' afterBalance: ', afterBalance, ' chazhi:', chazhi)
+                    console.log('txhash ',+ tx.transactionHash,+' topic: ', log.address, ' currentBlock: ', tx.blockNumber, ' beforeBalance: ', beforeBalance, ' afterBalance: ', afterBalance, ' chazhi:', chazhi)
 
                     if (collectionVolMap.has(log.address)) {
                         collectionVolMap.set(log.address, collectionVolMap.get(log.address) + chazhi)
@@ -86,13 +86,15 @@ async function processBalance(startBlock, address) {
                         collectionVolMap.set(log.address, chazhi)
                     }
                     console.log('collectionVolMap', JSON.stringify([...collectionVolMap]))
+                    startBlock = tx.blockNumber
                     break
                 }
             }
         }
-        startBlock = tx.blockNumber
     }
-    processBalance(startBlock)
+    if (startBlock < 28060420) {
+        processBalance(startBlock)
+    }
 }
 
 // main
@@ -104,6 +106,17 @@ async function main() {
     // collectionVolMap.set('0xd2ffd7e6644ec7266ffb50582784ea3d4686026d', 49504950495047)
     console.log('开始任务 ', startBlock, address)
     await processBalance(startBlock, address)
+
+
+    // let response = await queryBalance(address, 27807758)
+    // const beforeBalance = Number(response.data.result)
+    // console.log(beforeBalance)
+    //
+    // let response2 = await queryBalance(address, 27807760)
+    // const after = Number(response2.data.result)
+    // console.log(after)
+    // let queryTxInfoResponse = await queryTxInfo('0x93adfb13668f8a65f19d21f533c789e0d42fed88dfc2fa73c0d9e0f80c289a0c')
+    // console.log(queryTxInfoResponse.data)
 
 
     //解析input
