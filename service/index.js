@@ -356,10 +356,11 @@ class PoolSerice {
             (listitem) => listitem.id.toLowerCase() === item.id.toLowerCase()
           );
           if (_index > -1) {
+            // 链上池子的balance-数据库里这个池子的balance,就是他这个时间段内的交易量,然后加上之前的交易量,得到总交易量
             list[_index].eth_volume = (
               Math.abs(list[_index].eth_balance - item.eth_balance) +
               parseInt(item.eth_volume || 0)
-            ).toString();
+            ).toLocaleString().replaceAll(',', '').toString();
           }
         });
       }
